@@ -35,12 +35,12 @@ Don't run `npm install` inside individual apps or packages.
 
 ### Repository Layout
 
-| Path | Contents |
-| --- | --- |
-| `apps/api` | NestJS API: ticket data, permissions, email processing, and provider webhooks |
+| Path          | Contents                                                                                      |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| `apps/api`    | NestJS API: ticket data, permissions, email processing, and provider webhooks                 |
 | `apps/portal` | Next.js app: login and registration, agent workspace, public intake form, and customer portal |
-| `apps/web` | Next.js app: public website |
-| `packages/*` | Shared code and tooling (ESLint, Jest, Prettier, and TypeScript configs; shared utilities) |
+| `apps/web`    | Next.js app: public website                                                                   |
+| `packages/*`  | Shared code and tooling (ESLint, Jest, Prettier, and TypeScript configs; shared utilities)    |
 
 ### Run
 

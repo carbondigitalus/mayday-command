@@ -47,9 +47,8 @@
             "env": [
                 "NODE_ENV",
                 "PORT",
-                "SENTRY_AUTH_TOKEN",
-                "SENTRY_DSN",
                 "NEXT_PUBLIC_API_URL",
+                "NEXT_PUBLIC_SITE_URL",
                 "NEXT_PUBLIC_SSO_URL",
                 "DEPLOY_HOOK",
                 "REVALIDATE_SECRET",
@@ -59,11 +58,7 @@
                 "NEXT_PUBLIC_STORAGE_UPLOADS",
                 "NEXT_PUBLIC_STORAGE_URL_FILES",
                 "NEXT_PUBLIC_STORAGE_URL_UPLOADS",
-                "NEXT_PUBLIC_STORAGE_URL_WIDGET",
-                "NEXT_PUBLIC_ANALYTICS_ID_GA4",
-                "NEXT_PUBLIC_ANALYTICS_ID_FACEBOOK_PIXEL",
-                "NEXT_PUBLIC_ANALYTICS_ID_MICROSOFT_CLARITY",
-                "NEXT_PUBLIC_ANALYTICS_ID_SEGMENT"
+                "NEXT_PUBLIC_STORAGE_URL_WIDGET"
             ],
             "outputs": [".next/**", "!.next/cache/**", "public/robots.txt", "public/sitemap*.xml"]
         },
@@ -72,9 +67,8 @@
             "env": [
                 "NODE_ENV",
                 "PORT",
-                "SENTRY_AUTH_TOKEN",
-                "SENTRY_DSN",
                 "NEXT_PUBLIC_API_URL",
+                "NEXT_PUBLIC_SITE_URL",
                 "NEXT_PUBLIC_SSO_URL",
                 "DEPLOY_HOOK",
                 "REVALIDATE_SECRET",
@@ -84,11 +78,7 @@
                 "NEXT_PUBLIC_STORAGE_UPLOADS",
                 "NEXT_PUBLIC_STORAGE_URL_FILES",
                 "NEXT_PUBLIC_STORAGE_URL_UPLOADS",
-                "NEXT_PUBLIC_STORAGE_URL_WIDGET",
-                "NEXT_PUBLIC_ANALYTICS_ID_GA4",
-                "NEXT_PUBLIC_ANALYTICS_ID_FACEBOOK_PIXEL",
-                "NEXT_PUBLIC_ANALYTICS_ID_MICROSOFT_CLARITY",
-                "NEXT_PUBLIC_ANALYTICS_ID_SEGMENT"
+                "NEXT_PUBLIC_STORAGE_URL_WIDGET"
             ],
             "inputs": ["$TURBO_DEFAULT$", ".env.staging"],
             "outputs": [".next/**", "!.next/cache/**", "public/robots.txt", "public/sitemap*.xml"]

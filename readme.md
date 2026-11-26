@@ -32,18 +32,19 @@ Mayday Command is built around that everyday workflow. Your team can run it on i
 
 ## Architecture
 
-Mayday Command is planned as a TypeScript monorepo managed with [Turborepo](https://turbo.build/). The web app and API share a repository and can share TypeScript contracts. Each app has its own build, runtime configuration, and deployment.
+Mayday Command is planned as a TypeScript monorepo managed with [Turborepo](https://turbo.build/). The apps share a repository and can share TypeScript contracts. Each app has its own build, runtime configuration, and deployment.
 
-| App | Stack | Role |
-| --- | --- | --- |
-| `apps/api` | [NestJS](https://nestjs.com/) | Ticket data, permissions, email processing, and provider webhooks |
-| `apps/web` | [Next.js](https://nextjs.org/) | Agent workspace, public intake form, and customer portal |
+| App           | Stack                          | Role                                                                             |
+| ------------- | ------------------------------ | -------------------------------------------------------------------------------- |
+| `apps/api`    | [NestJS](https://nestjs.com/)  | Ticket data, permissions, email processing, and provider webhooks                |
+| `apps/portal` | [Next.js](https://nextjs.org/) | Login and registration, agent workspace, public intake form, and customer portal |
+| `apps/web`    | [Next.js](https://nextjs.org/) | Public website                                                                   |
 
 PostgreSQL is the planned database. Shared contracts and workspace tooling will live under `packages/`.
 
 ## Self-hosting
 
-The planned setup starts from a tagged source checkout. Deploy the API and web app separately, with their own ports and environment files. The API connects to PostgreSQL and holds the mail provider credentials. The web app is configured with the API URL. Native Node.js deployment is a first-class path, with Docker optional.
+The planned setup starts from a tagged source checkout. Deploy the API and portal separately, with their own ports and environment files. The API connects to PostgreSQL and holds the mail provider credentials. The portal is configured with the API URL. Native Node.js deployment is a first-class path, with Docker optional.
 
 ## Upgrades
 
@@ -61,4 +62,4 @@ If you’re proposing a feature or a substantial change, start with a [GitHub is
 
 ## License
 
-[MIT](LICENSE)
+[MIT](license.md)

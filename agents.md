@@ -54,9 +54,9 @@ The apps were copied from another project and are being converted one at a time.
 - Type each app's variables in `packages/typescript-config/src/<app>.d.ts` (`api.d.ts`, `portal.d.ts`, `web.d.ts`). The app's `tsconfig.json` includes that file and `global.d.ts`.
 - Turborepo runs in strict env mode. A variable a build needs must be listed in that task's `env` array in `turbo.json`, or it's undefined during the build.
 
-## Checks
+## Pre-Flight Checks
 
-These checks are mandatory. Run all five after every change, from the repository root, in this exact order:
+"Pre-Flight Checks" (or "pre-flight") is the name for these five checks, run from the repository root in this exact order:
 
 1. `npm run format`
 2. `npm run lint`
@@ -66,10 +66,11 @@ These checks are mandatory. Run all five after every change, from the repository
 
 Rules:
 
-- **Every change means every change.** That includes one-line fixes, config edits, and documentation. There are no exceptions for small or "safe" changes.
-- **Use these exact commands.** Don't add `--filter`, don't run them from an app or package folder, and don't replace them with app-level scripts, `npx tsc`, `npx eslint`, `npx prettier --check`, or any other partial check. Partial checks can be extra, but never a substitute.
+- **Run pre-flight only when the user tells you to.** The user decides when a work item is ready for pre-flight. Don't start it on your own, and don't run it after individual edits.
+- **When told to run pre-flight, run all five.** Every work item gets the full run, including small ones, config edits, and documentation.
+- **Use these exact commands.** Don't add `--filter`, don't run them from an app or package folder, and don't replace them with app-level scripts, `npx tsc`, `npx eslint`, `npx prettier --check`, or any other partial check. A partial check is never a substitute for pre-flight.
 - **Run them in order.** Each check runs only after the one before it passes.
-- **Stop at the first failure.** Fix the cause, then start again from step 1, not from the failed step.
+- **Stop at the first failure and report it.** Once the cause is fixed, start again from step 1, not from the failed step.
 - **A check that can't run is a failure.** For example, a missing script, a missing dependency, or a missing env variable. Report it; don't skip it or call it passed.
 - **Report every result.** For each check, give the command, whether it passed or failed, and the relevant output for any failure. If `format` changed any files, list them.
-- **The work isn't done until all five pass.** Don't describe a change as finished, working, or verified until they do. If you stop before all five pass, say which check failed and why.
+- **The work isn't verified until pre-flight passes.** Don't describe a work item as finished, working, or verified until all five pass. If pre-flight hasn't run yet, say so. If it stopped early, say which check failed and why.
