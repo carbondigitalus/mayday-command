@@ -2,7 +2,6 @@
     <img src="_repo/logo.png" alt="Logo">
 </div>
 <br />
-<br />
 
 # Mayday Command
 
