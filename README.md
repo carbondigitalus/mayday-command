@@ -28,6 +28,7 @@ Mayday Command is built around that everyday workflow. Your team can run it on i
 - [ ] **Assignment and status** — See who owns a request and what still needs attention.
 - [ ] **Customer portal** — Let customers view and follow up on their requests.
 - [ ] **Email connection checks** — Verify authentication, Inbox access, outbound delivery, and new-mail notifications separately so operators can see where setup failed.
+- [ ] **Railway Template** - Setup a one-click Railway template, so initial launch is much faster.
 
 ## Architecture
 
