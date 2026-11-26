@@ -1,0 +1,71 @@
+# compiled output
+dist
+build
+.next
+.next-e2e
+.docusaurus
+node_modules
+*.tsbuildinfo
+next-env.d.ts
+tsconfig.tsbuildinfo
+sitemap.xml
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+
+# Tests
+coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Custom Sections
+.env*
+package-lock.json
+
+# Cached Files
+.cache/
+# Sentry Config File
+.sentryclirc
+
+# Turbo
+.turbo
+
+# next-sitemap generated files
+apps/web/public/robots.txt
+apps/web/public/sitemap*.xml
+
+# Payload local media uploads
+apps/content/media
+
+# Payload generated types (regenerate via `npm run generate:types`)
+apps/content/src/payload-types.ts
+
+# Stray tsc output that leaks into src/ when outDir isn't honored (e.g. bare `tsc`)
+apps/*/src/**/*.js
+apps/*/src/**/*.js.map
+apps/*/src/**/*.d.ts
+!apps/content/src/app/(payload)/admin/importMap.js
