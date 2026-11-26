@@ -1,2 +1,2 @@
 /** @type {import("prettier").Config} */
-module.exports = require('@veterandb/prettier-config');
+module.exports = require('@mayday-command/prettier-config');
