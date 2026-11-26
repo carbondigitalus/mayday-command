@@ -1,0 +1,34 @@
+{
+    "extends": "@mayday-command/typescript-config/nextjs.json",
+    "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
+        "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true,
+        "incremental": true,
+        "isolatedModules": true,
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": false,
+        "noImplicitThis": true,
+        "outDir": "./dist",
+        "paths": {
+            "@/*": ["./src/*"]
+        },
+        "removeComments": true,
+        "resolveJsonModule": true,
+        "strict": true,
+        "strictBindCallApply": false,
+        "strictNullChecks": false,
+        "target": "es2018"
+    },
+    "include": [
+        "next-env.d.ts",
+        "**/*.ts",
+        "**/*.tsx",
+        "../../packages/typescript-config/src/global.d.ts",
+        "../../packages/typescript-config/src/web.d.ts"
+    ],
+    "exclude": ["node_modules"]
+}
