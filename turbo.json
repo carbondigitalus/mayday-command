@@ -16,10 +16,6 @@
             "inputs": ["$TURBO_DEFAULT$", ".env.production"],
             "outputs": ["dist/**"]
         },
-        "@mayday-command/docs#build": {
-            "dependsOn": ["^build"],
-            "outputs": ["build/**"]
-        },
         "@mayday-command/portal#build": {
             "dependsOn": ["^build"],
             "env": [

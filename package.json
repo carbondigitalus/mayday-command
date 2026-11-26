@@ -1,0 +1,49 @@
+{
+    "name": "mayday-command",
+    "version": "0.0.0",
+    "private": true,
+    "license": "MIT",
+    "scripts": {
+        "build": "turbo build",
+        "build:api": "npx turbo run build --filter=@mayday-command/api",
+        "build:portal": "npx turbo run build --filter=@mayday-command/portal",
+        "build:web": "npx turbo run build --filter=@mayday-command/web",
+        "build:web:staging": "npx turbo run build:staging --filter=@mayday-command/web",
+        "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+        "lint": "turbo lint",
+        "start:api:prod": "npm run start:prod --workspace=@mayday-command/api",
+        "start:portal:prod": "npm run start:prod --workspace=@mayday-command/portal",
+        "start:web:prod": "npm run start:prod --workspace=@mayday-command/web",
+        "start:dev": "turbo start:dev",
+        "test:e2e": "turbo test:e2e",
+        "test:unit": "turbo test:unit",
+        "typecheck": "turbo typecheck"
+    },
+    "devDependencies": {
+        "prettier": "^3.6.2",
+        "turbo": "^2.10.9"
+    },
+    "dependencies": {
+        "@payloadcms/ui": "3.94.2",
+        "next": "16.4.6"
+    },
+    "allowScripts": {
+        "@heroui/shared-utils": true,
+        "@parcel/watcher": true,
+        "@sentry/cli": true,
+        "argon2": true,
+        "core-js": true,
+        "esbuild": true,
+        "sharp": true,
+        "unrs-resolver": true
+    },
+    "overrides": {
+        "react": "19.2.9",
+        "react-dom": "19.2.9"
+    },
+    "packageManager": "npm@11.13.0",
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ]
+}
