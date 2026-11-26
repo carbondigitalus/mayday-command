@@ -1,3 +1,9 @@
+<div>
+    <img src="_repo/logo.png" alt="Logo">
+</div>
+<br />
+<br />
+
 # Mayday Command
 
 **Open-source help desk software for teams that run their own stack.**
