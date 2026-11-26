@@ -33,6 +33,7 @@ body:
               - Agent workspace (shared inbox, replies, notes, assignment)
               - Customer portal
               - Public intake form
+              - Public website
               - Email to ticket (Microsoft 365)
               - API
               - Installation or upgrade
@@ -76,7 +77,7 @@ body:
       attributes:
           label: Logs
           description: |
-              Please provide relevant log output from the API, web app, or browser console.
+              Please provide relevant log output from the API, portal, or browser console.
               If the log is long, attach it as a file in the `Additional Context` section.
           placeholder: Please paste log output ...
           render: text

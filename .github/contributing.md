@@ -9,7 +9,7 @@ Thanks for your interest in contributing! This guide covers how to propose chang
 - **Bugs:** Open a [Bug Report](https://github.com/carbondigitalus/mayday-command/issues/new/choose).
 - **Features and substantial changes:** Open a [Feature Request](https://github.com/carbondigitalus/mayday-command/issues/new/choose) first. Describe the workflow, who it affects (agents, customers, or operators), and where it breaks down today. Agreeing on the approach before writing code saves everyone time.
 - **Questions:** Open a [Support Request](https://github.com/carbondigitalus/mayday-command/issues/new/choose).
-- **Security vulnerabilities:** Do **not** open a public issue. Follow the [security policy](.github/SECURITY.md).
+- **Security vulnerabilities:** Do **not** open a public issue. Follow the [security policy](security.md).
 
 Search existing issues (open and closed) before opening a new one.
 
@@ -17,7 +17,7 @@ Search existing issues (open and closed) before opening a new one.
 
 ### Prerequisites
 
-- Node.js, at the version in [`.nvmrc`](.nvmrc) (run `nvm use` if you use nvm)
+- Node.js, at the version in [`.nvmrc`](../.nvmrc) (run `nvm use` if you use nvm)
 - npm 11
 - PostgreSQL
 
@@ -38,7 +38,8 @@ Don't run `npm install` inside individual apps or packages.
 | Path | Contents |
 | --- | --- |
 | `apps/api` | NestJS API: ticket data, permissions, email processing, and provider webhooks |
-| `apps/web` | Next.js app: agent workspace, public intake form, and customer portal |
+| `apps/portal` | Next.js app: login and registration, agent workspace, public intake form, and customer portal |
+| `apps/web` | Next.js app: public website |
 | `packages/*` | Shared code and tooling (ESLint, Jest, Prettier, and TypeScript configs; shared utilities) |
 
 ### Run
@@ -83,4 +84,4 @@ Add or update tests for the behavior you change.
 
 ## License
 
-Mayday Command is licensed under the [MIT License](LICENSE). By contributing, you agree that your contributions are licensed under the same terms.
+Mayday Command is licensed under the [MIT License](../license.md). By contributing, you agree that your contributions are licensed under the same terms.

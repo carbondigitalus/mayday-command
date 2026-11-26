@@ -32,7 +32,7 @@ body:
       attributes:
           label: Logs
           description: |
-              If relevant, provide log output from the API, web app, or browser console.
+              If relevant, provide log output from the API, portal, or browser console.
               If the log is long, attach it as a file in the `Additional Context` section.
           placeholder: Please paste log output ...
           render: text
