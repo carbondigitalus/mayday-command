@@ -1,0 +1,53 @@
+name: 🔬 Experimental Change
+description: Suggest an experimental or visionary improvement for Mayday Command.
+labels: ['enhancement', 'pending triage']
+title: '[Name]'
+
+body:
+    - type: markdown
+      attributes:
+          value: |
+              Hi. Thanks for taking the time to contribute to Mayday Command!
+
+              Describe the workflow, who it affects, and where it breaks down today.
+
+    - type: dropdown
+      id: audience
+      attributes:
+          label: Who Is Affected
+          description: Who would this change help? Select all that apply.
+          multiple: true
+          options:
+              - Support agents
+              - Customers
+              - Operators (self-hosting, configuration, upgrades)
+              - Contributors
+      validations:
+          required: true
+
+    - type: textarea
+      id: problem
+      attributes:
+          label: Current Situation
+          description: Please describe the current workflow and where it breaks down.
+          placeholder: A clear and concise description of the problem or situation that should be addressed.
+      validations:
+          required: true
+
+    - type: textarea
+      id: solution
+      attributes:
+          label: Proposed Change
+          description: Please provide a clear and concise description of the solution or change you propose and how it should work.
+          placeholder: A clear and concise description of the solution or change you propose and how it should work.
+      validations:
+          required: true
+
+    - type: textarea
+      id: additional-context
+      attributes:
+          label: Additional Context
+          description: |
+              Please provide any additional context that might be relevant for your request.
+              You may add screenshots, mockups, or links to prior art.
+          placeholder: Any additional context that might be relevant for your request.

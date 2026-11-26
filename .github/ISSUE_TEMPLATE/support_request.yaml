@@ -1,0 +1,86 @@
+name: ❓ Support Request
+description: Get help when you run into problems, or simply ask a question.
+labels: ['question', 'pending triage']
+title: '[Name]'
+
+body:
+    - type: markdown
+      attributes:
+          value: |
+              Hi. Before you start, please:
+              - Search **existing issues** (open or closed) in case your question has already been answered.
+              - Remove sensitive information from everything you paste: passwords, API keys, mail provider credentials, customer email addresses, and ticket content.
+
+    - type: textarea
+      id: problem
+      attributes:
+          label: Current Situation
+          description: Please describe what you are trying to do and where you are stuck.
+          placeholder: A clear and concise description of the problem or question.
+      validations:
+          required: true
+
+    - type: input
+      id: version
+      attributes:
+          label: Mayday Command Version
+          description: The release tag or commit you are running (output of `git describe --tags --always` in your checkout).
+          placeholder: v0.1.0 or a1b2c3d
+
+    - type: textarea
+      id: logs
+      attributes:
+          label: Logs
+          description: |
+              If relevant, provide log output from the API, web app, or browser console.
+              If the log is long, attach it as a file in the `Additional Context` section.
+          placeholder: Please paste log output ...
+          render: text
+
+    - type: textarea
+      id: config
+      attributes:
+          label: Configuration
+          description: |
+              If relevant, provide the environment variables for the affected app, with all secret values removed.
+          placeholder: Please paste configuration ...
+          render: shell
+
+    - type: dropdown
+      id: deployment
+      attributes:
+          label: Deployment Method
+          description: How is this instance of Mayday Command running?
+          options:
+              - Native Node.js
+              - Docker
+              - Local development (`npm run start:dev`)
+              - Other (describe in Additional Context)
+
+    - type: textarea
+      id: environment
+      attributes:
+          label: Environment
+          description: |
+              Describe the environment you are running in.
+
+              The environment description might look like the following:
+                - **OS**: Ubuntu 24.04
+                - **Node**: 24.22.3 (output of `node -v`)
+                - **npm**: 11.13.0 (output of `npm -v`)
+                - **PostgreSQL**: 17.5 (output of `psql --version`)
+          value: |
+              - OS:
+              - Node:
+              - npm:
+              - PostgreSQL:
+
+    - type: textarea
+      id: additional-context
+      attributes:
+          label: Additional Context
+          description: |
+              Please provide any additional context that might be relevant for your request.
+
+              It might include screenshots, longer log files, or configuration files.
+          placeholder: Any additional context that might be relevant for your request.

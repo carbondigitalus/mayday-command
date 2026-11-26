@@ -1,0 +1,136 @@
+name: 🐞 Bug Report
+description: Report a problem you found in Mayday Command.
+labels: ['bug', 'pending triage']
+title: '[Bug]: '
+
+body:
+    - type: markdown
+      attributes:
+          value: |
+              Hi. Thanks for taking the time to fill out this bug report!
+
+              Before you start, please:
+              - Search existing issues (open or closed) in case your problem is already tracked or resolved.
+              - Use a short, specific title that describes the problem.
+              - Remove sensitive information from everything you paste: passwords, API keys, mail provider credentials, customer email addresses, and ticket content.
+
+    - type: input
+      id: version
+      attributes:
+          label: Mayday Command Version
+          description: The release tag or commit you are running (output of `git describe --tags --always` in your checkout).
+          placeholder: v0.1.0 or a1b2c3d
+      validations:
+          required: true
+
+    - type: dropdown
+      id: area
+      attributes:
+          label: Affected Area
+          description: Which part of Mayday Command is affected? Select all that apply.
+          multiple: true
+          options:
+              - Agent workspace (shared inbox, replies, notes, assignment)
+              - Customer portal
+              - Public intake form
+              - Email to ticket (Microsoft 365)
+              - API
+              - Installation or upgrade
+              - Documentation
+              - Not sure
+      validations:
+          required: true
+
+    - type: textarea
+      id: analysis
+      attributes:
+          label: Analysis
+          description: Please provide a concise description of the bug.
+          placeholder: A clear and concise description of what the bug is.
+      validations:
+          required: true
+
+    - type: textarea
+      id: expected-behavior
+      attributes:
+          label: Expected Behavior
+          description: Please provide a clear and concise description of what you expected to happen.
+          placeholder: A clear and concise description of what you expected to happen.
+      validations:
+          required: true
+
+    - type: textarea
+      id: reproduction
+      attributes:
+          label: Steps To Reproduce
+          description: Please describe how to reproduce the issue.
+          placeholder: |
+              1. Go to ...
+              2. Click or send ...
+              3. See error ...
+      validations:
+          required: true
+
+    - type: textarea
+      id: logs
+      attributes:
+          label: Logs
+          description: |
+              Please provide relevant log output from the API, web app, or browser console.
+              If the log is long, attach it as a file in the `Additional Context` section.
+          placeholder: Please paste log output ...
+          render: text
+
+    - type: textarea
+      id: config
+      attributes:
+          label: Configuration
+          description: |
+              If relevant, provide the environment variables for the affected app, with all secret values removed.
+          placeholder: Please paste configuration ...
+          render: shell
+
+    - type: dropdown
+      id: deployment
+      attributes:
+          label: Deployment Method
+          description: How is this instance of Mayday Command running?
+          options:
+              - Native Node.js
+              - Docker
+              - Local development (`npm run start:dev`)
+              - Other (describe in Additional Context)
+      validations:
+          required: true
+
+    - type: textarea
+      id: environment
+      attributes:
+          label: Environment
+          description: |
+              Describe the environment where you encountered the issue.
+
+              The environment description might look like the following:
+                - **OS**: Ubuntu 24.04
+                - **Node**: 24.22.3 (output of `node -v`)
+                - **npm**: 11.13.0 (output of `npm -v`)
+                - **PostgreSQL**: 17.5 (output of `psql --version`)
+                - **Browser**: Chrome 142 (for problems in the web interface)
+          value: |
+              - OS:
+              - Node:
+              - npm:
+              - PostgreSQL:
+              - Browser:
+      validations:
+          required: true
+
+    - type: textarea
+      id: additional-context
+      attributes:
+          label: Additional Context
+          description: |
+              Please provide any additional context that might be relevant for your bug report.
+
+              It might include screenshots, longer log files, or configuration files.
+          placeholder: Any additional context that might be relevant for your bug report.
