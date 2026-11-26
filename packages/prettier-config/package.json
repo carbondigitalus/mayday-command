@@ -1,0 +1,17 @@
+{
+    "name": "@mayday-command/prettier-config",
+    "version": "0.0.0",
+    "type": "module",
+    "private": true,
+    "main": "base.cjs",
+    "types": "./base.d.ts",
+    "exports": {
+        ".": {
+            "types": "./base.d.ts",
+            "default": "./base.cjs"
+        }
+    },
+    "devDependencies": {
+        "prettier": "^3.6.2"
+    }
+}
