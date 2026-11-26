@@ -3,10 +3,6 @@ declare namespace NodeJS {
         CONTENT_API_KEY: string;
         CONTENT_API_URL: string;
         DEPLOY_HOOK: string;
-        NEXT_PUBLIC_ANALYTICS_ID_FACEBOOK_PIXEL: string;
-        NEXT_PUBLIC_ANALYTICS_ID_GA4: string;
-        NEXT_PUBLIC_ANALYTICS_ID_MICROSOFT_CLARITY: string;
-        NEXT_PUBLIC_ANALYTICS_ID_SEGMENT: string;
         NEXT_PUBLIC_API_URL: string;
         NEXT_PUBLIC_SITE_URL: string;
         NEXT_PUBLIC_SSO_URL: string;
