@@ -1,0 +1,24 @@
+/* Tailwind Config */
+/* Custom Fonts - Must Be Loaded Before Tailwind */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap');
+
+@import 'tailwindcss';
+
+@theme {
+    /* Brand Colors: black and white come from Tailwind */
+    --color-safetyYellow: #ffcc00;
+
+    /* Custom Fonts */
+    --font-opensans: 'Open Sans', sans-serif;
+    --font-quatro: 'quatro', 'Open Sans', sans-serif;
+    --font-display: var(--font-opensans);
+}
+
+/* HeroUI Setup */
+@plugin '../utils/plugins/hero-ui.ts';
+@source '../../../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
+/*--- Background Images ---*/
+.home-hero {
+    background-image: url('/img/content/night-shift-support-workspace.jpg');
+}

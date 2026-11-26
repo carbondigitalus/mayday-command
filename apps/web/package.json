@@ -6,31 +6,22 @@
     "scripts": {
         "build": "next build",
         "build:staging": "NODE_ENV=production dotenv -e .env.staging -- next build",
-        "postbuild": "next-sitemap --config sitemap.config.js",
+        "postbuild": "next-sitemap --config sitemap.config.ts",
         "lint": "eslint src --fix",
-        "start:dev": "NODE_ENV=development next dev --port 3060",
+        "start:dev": "NODE_ENV=development next dev --port 3010",
         "start:prod": "NODE_ENV=production next start",
-        "test:unit": "jest --coverage --config jest.config.ts",
-        "test:watch": "jest --coverage --watch --config jest.config.ts",
         "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
-        "@testing-library/jest-dom": "^6.9.1",
-        "@testing-library/react": "^16.3.2",
-        "@types/jest": "^30.0.0",
         "@types/node": "^24.3.0",
         "@types/react": "19.2.18",
         "@types/react-dom": "19.1.7",
         "@mayday-command/eslint-config": "file:../../packages/eslint-config",
-        "@mayday-command/jest-config": "file:../../packages/jest-config",
         "@mayday-command/prettier-config": "file:../../packages/prettier-config",
         "@mayday-command/typescript-config": "file:../../packages/typescript-config",
         "dotenv-cli": "^8.0.0",
         "eslint": "^9.34.0",
-        "jest": "^30.1.3",
-        "jest-environment-jsdom": "^30.2.0",
         "slugify": "^1.6.6",
-        "ts-jest": "^29.4.4",
         "typescript": "5.9.2"
     },
     "dependencies": {

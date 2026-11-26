@@ -13,8 +13,11 @@ import {
     NavbarMenuItem
 } from '@heroui/react';
 import React from 'react';
+
+// Custom Modules
 import ChevronDown from '../atoms/icons/ChevronDown';
 import Menu from '../atoms/icons/Menu';
+import SocialLinks from '../molecules/social-links';
 
 interface PageProps {
     child?: any;
@@ -63,58 +66,35 @@ export default class Header extends React.Component<PageProps, PageState> {
     render() {
         const { isMenuOpen } = this.state;
 
-        const topBarNavItems = [
-            { label: 'Login', href: process.env.NEXT_PUBLIC_SSO_URL },
-            {
-                label: 'Register',
-                href: `${process.env.NEXT_PUBLIC_SSO_URL}/register`
-            },
-            { label: 'Roadmap', href: 'https://veterandb.canny.io' },
-            { label: 'Server Status', href: 'https://status.veterandb.com' }
-        ];
-
         const mainNavItems: NavItem[] = [
-            { label: 'Home', href: '/' },
+            { href: '/', label: 'Home' },
+            { href: '/#how-it-works', label: 'How It Works' },
+            { href: '/#self-hosting', label: 'Self-Hosting' },
+            { href: '/#roadmap', label: 'Roadmap' },
             {
-                label: 'Company',
-                children: [
-                    { label: 'About', href: '/about' },
-                    { label: 'Advertise', href: '/advertise' },
-                    { label: 'FAQs', href: '/faqs' }
-                ]
-            },
-            {
-                label: 'Listings',
-                children: [
-                    { label: 'Business', href: '/business' },
-                    { label: 'Directory', href: '/directory' },
-                    { label: 'NonProfit', href: '/nonprofit' },
-                    { label: 'Podcast', href: '/podcast' }
-                ]
-            },
-            {
-                label: 'Media',
-                children: [
-                    { label: 'Blog', href: '/blog' },
-                    { label: 'Press Releases', href: '/press' },
-                    { label: 'Magazine', href: '/magazine' },
-                    { label: 'VeteranFM', href: '/veteranfm' }
-                ]
-            },
-            {
-                label: 'Shop',
                 children: [
                     {
-                        label: 'Exchange',
-                        href: 'https://exchange.veterandb.com/?utm_source=veterandb.com&utm_medium=website&utm_campaign=exchange-store&utm_content=header',
-                        isExternal: true
+                        href: 'https://github.com/carbondigitalus/mayday-command',
+                        isExternal: true,
+                        label: 'GitHub'
                     },
                     {
-                        label: 'Gear',
-                        href: 'https://gear.veterandb.com/?utm_source=veterandb.com&utm_medium=website&utm_campaign=gear-store&utm_content=header',
-                        isExternal: true
+                        href: 'https://github.com/carbondigitalus/mayday-command/blob/main/.github/contributing.md',
+                        isExternal: true,
+                        label: 'Contributing'
+                    },
+                    {
+                        href: 'https://github.com/carbondigitalus/mayday-command/blob/main/.github/security.md',
+                        isExternal: true,
+                        label: 'Security'
+                    },
+                    {
+                        href: 'https://github.com/carbondigitalus/mayday-command/blob/main/license.md',
+                        isExternal: true,
+                        label: 'License'
                     }
-                ]
+                ],
+                label: 'Project'
             }
         ];
 
@@ -136,33 +116,19 @@ export default class Header extends React.Component<PageProps, PageState> {
                                     </Link>
                                 </p>
                             </div>
-                            <div className='uppercase'>
-                                <ul className='flex justify-end space-x-0'>
-                                    {topBarNavItems.map((item) => (
-                                        <li key={item.label} className='font-bold p-2'>
-                                            <Link
-                                                href={item.href}
-                                                className='text-inherit text-sm hover:underline'
-                                                isExternal
-                                            >
-                                                {item.label}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                            <SocialLinks className='justify-end' size={20} />
                         </div>
                     </div>
                 </div>
 
                 {/* Main Navbar */}
                 <Navbar
-                    height='5rem'
+                    height='6rem'
                     isMenuOpen={isMenuOpen}
                     onMenuOpenChange={this.setIsMenuOpen}
                     classNames={{
                         base: 'bg-safetyYellow',
-                        wrapper: 'max-w-7xl mx-auto py-10',
+                        wrapper: 'max-w-7xl mx-auto',
                         content: 'uppercase text-2xl'
                     }}
                 >
@@ -172,8 +138,9 @@ export default class Header extends React.Component<PageProps, PageState> {
                                 <img
                                     src='/img/logo/logo-horizontal-black.png'
                                     alt='Mayday Command Logo'
-                                    width={250}
-                                    height={123}
+                                    className='h-20 w-auto'
+                                    width={163}
+                                    height={80}
                                 />
                             </Link>
                         </NavbarBrand>
@@ -285,18 +252,10 @@ export default class Header extends React.Component<PageProps, PageState> {
                             <div className='w-full border-t border-safetyYellow my-2'></div>
                         </NavbarMenuItem>
 
-                        {/* Top Bar Items for Mobile */}
-                        {topBarNavItems.map((item) => (
-                            <NavbarMenuItem key={`mobile-${item.label}`}>
-                                <Link
-                                    href={item.href}
-                                    className='hover:underline font-bold text-white text-lg'
-                                    isExternal
-                                >
-                                    {item.label}
-                                </Link>
-                            </NavbarMenuItem>
-                        ))}
+                        {/* Social Links for Mobile */}
+                        <NavbarMenuItem>
+                            <SocialLinks size={28} />
+                        </NavbarMenuItem>
 
                         {/* Mobile Only Items */}
                         {mobileOnlyNavItems.map((item) => (

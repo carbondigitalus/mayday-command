@@ -3,13 +3,69 @@ import { Link } from '@heroui/react';
 import React from 'react';
 
 // Custom Modules
-import Facebook from '../atoms/icons/social-media/Facebook';
-import Instagram from '../atoms/icons/social-media/Instagram';
-import LinkedIn from '../atoms/icons/social-media/LinkedIn';
-import Medium from '../atoms/icons/social-media/Medium';
-import Reddit from '../atoms/icons/social-media/Reddit';
-import XTwitter from '../atoms/icons/social-media/XTwitter';
-import YouTube from '../atoms/icons/social-media/YouTube';
+import SocialLinks from '../molecules/social-links';
+
+/** A link in a footer column. */
+interface FooterLink {
+    /** URL the link points to. */
+    href: string;
+    /** Opens the link in a new window when `true`. */
+    isExternal?: boolean;
+    /** Link text. */
+    label: string;
+}
+
+/** A titled column of links in the footer. */
+interface FooterColumn {
+    /** Links in the column, in display order. */
+    links: FooterLink[];
+    /** Column heading. */
+    title: string;
+}
+
+/** Base URL of the Mayday Command repository on GitHub. */
+const repositoryURL = 'https://github.com/carbondigitalus/mayday-command';
+
+/** Year the copyright notice starts, matching `license.md`. */
+const copyrightStartYear = 2026;
+
+/** Footer link columns, in display order. */
+const footerColumns: FooterColumn[] = [
+    {
+        links: [
+            { href: '/#how-it-works', label: 'How It Works' },
+            { href: '/#self-hosting', label: 'Self-Hosting' },
+            { href: '/#roadmap', label: 'Roadmap' }
+        ],
+        title: 'Product'
+    },
+    {
+        links: [
+            { href: repositoryURL, isExternal: true, label: 'GitHub' },
+            { href: `${repositoryURL}/blob/main/.github/contributing.md`, isExternal: true, label: 'Contributing' },
+            { href: `${repositoryURL}/blob/main/.github/security.md`, isExternal: true, label: 'Security' },
+            { href: `${repositoryURL}/blob/main/license.md`, isExternal: true, label: 'License' }
+        ],
+        title: 'Project'
+    },
+    {
+        links: [
+            { href: `${repositoryURL}/issues/new?template=bug_report.yaml`, isExternal: true, label: 'Report a Bug' },
+            {
+                href: `${repositoryURL}/issues/new?template=support_request.yaml`,
+                isExternal: true,
+                label: 'Ask a Question'
+            },
+            {
+                href: `${repositoryURL}/issues/new?template=feature_request.yaml`,
+                isExternal: true,
+                label: 'Propose a Feature'
+            },
+            { href: 'mailto:hello@maydaycommand.com', label: 'Email Us' }
+        ],
+        title: 'Get Help'
+    }
+];
 
 export default class Footer extends React.Component {
     constructor(props) {
@@ -17,6 +73,10 @@ export default class Footer extends React.Component {
     }
 
     render() {
+        const currentYear = new Date().getFullYear();
+        const copyrightYears =
+            currentYear > copyrightStartYear ? `${copyrightStartYear}–${currentYear}` : `${copyrightStartYear}`;
+
         return (
             <footer className='bg-black py-20'>
                 <div className='footer py-10 w-full'>
@@ -31,198 +91,33 @@ export default class Footer extends React.Component {
                                         height={123}
                                     />
                                 </Link>
-                                <br />
                                 <p className='mt-4 text-white'>
-                                    Veteran Database. The single point of reference for Veteran Business &amp;
-                                    Entertainment.
+                                    Open-source help desk software for teams that run their own stack.
                                     <br />
                                     <br />
-                                    100% Veteran-Owned & Operated.
+                                    Built by Carbon Digital.
                                 </p>
-                                <Link
-                                    href='https://play.google.com/store/apps/details?id=com.veterandb.android'
-                                    className='text-white hover:underline font-normal'
-                                    isExternal
-                                >
-                                    <img
-                                        src='/img/icons/google-play-store.webp'
-                                        alt='Google Play Store Logo'
-                                        width={200}
-                                        height={200}
-                                    />
-                                </Link>
                             </div>
 
                             <div className='footer-menu-section col-span-12 md:col-span-8 grid grid-cols-12 gap-4'>
-                                <div className='veteran-listings-col footer-menu-col col-span-12 lg:col-span-3'>
-                                    <h2 className='text-xl font-bold mb-2 text-white'>Veteran Listings</h2>
-                                    <ul className='space-y-1 text-white'>
-                                        <li>
-                                            <Link href='/business' className='text-white hover:underline font-normal'>
-                                                Business
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href='/directory'
-                                                className='text-inherit hover:underline font-normal'
-                                            >
-                                                Directory
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href='/nonprofit'
-                                                className='text-inherit hover:underline font-normal'
-                                            >
-                                                NonProfit
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link href='/podcast' className='text-inherit hover:underline font-normal'>
-                                                Podcast
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div className='entertainment-col footer-menu-col col-span-12 lg:col-span-3'>
-                                    <h2 className='text-xl font-bold mb-2 text-white'>VeteranDB Shops</h2>
-                                    <ul className='space-y-1 mb-6 text-white'>
-                                        <li>
-                                            <Link
-                                                href='https://exchange.veterandb.com/?utm_source=veterandb.com&utm_medium=website&utm_campaign=exchange-store&utm_content=header'
-                                                className='text-inherit hover:underline font-normal'
-                                                isExternal
-                                            >
-                                                Exchange
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href='https://gear.veterandb.com/?utm_source=veterandb.com&utm_medium=website&utm_campaign=gear-store&utm_content=footer'
-                                                className='text-inherit hover:underline font-normal'
-                                                isExternal
-                                            >
-                                                Gear Store
-                                            </Link>
-                                        </li>
-                                    </ul>
-
-                                    <h2 className='text-xl font-bold mb-2 text-white'>Entertainment</h2>
-                                    <ul className='space-y-1'>
-                                        <li>
-                                            <span className='font-normal text-white'>Coming Soon!</span>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div className='useful-links-col footer-menu-col col-span-12 lg:col-span-3'>
-                                    <h2 className='text-xl font-bold mb-2 text-white'>Useful Links</h2>
-                                    <ul className='space-y-1 text-white'>
-                                        <li>
-                                            <Link href='/blog' className='text-inherit hover:underline font-normal'>
-                                                Blog
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link href='/faqs' className='text-inherit hover:underline font-normal'>
-                                                FAQs
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link href='/magazine' className='text-inherit hover:underline font-normal'>
-                                                Magazine
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={process.env.NEXT_PUBLIC_SSO_URL}
-                                                className='text-inherit hover:underline font-normal'
-                                                isExternal
-                                            >
-                                                Login
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={`${process.env.NEXT_PUBLIC_SSO_URL}/register`}
-                                                className='text-inherit hover:underline font-normal'
-                                                isExternal
-                                            >
-                                                Register
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href='https://veterandb.canny.io'
-                                                className='text-inherit hover:underline font-normal'
-                                                isExternal
-                                            >
-                                                Roadmap
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href='/veteranfm'
-                                                className='text-inherit hover:underline font-normal'
-                                            >
-                                                VeteranFM
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div className='company-links-col footer-menu-col col-span-12 lg:col-span-3'>
-                                    <h2 className='text-xl font-bold mb-2 text-white'>Company</h2>
-                                    <ul className='space-y-1 text-white'>
-                                        <li>
-                                            <Link href='/about' className='text-inherit hover:underline font-normal'>
-                                                About
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href='/advertise'
-                                                className='text-inherit hover:underline font-normal'
-                                            >
-                                                Advertise
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href='https://github.com/carbondigitalus/mayday-command/blob/main/license.md'
-                                                className='text-inherit hover:underline font-normal'
-                                                isExternal
-                                            >
-                                                License
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link href='/press' className='text-inherit hover:underline font-normal'>
-                                                Press Releases
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href='https://status.veterandb.com'
-                                                className='text-inherit hover:underline font-normal'
-                                                isExternal
-                                            >
-                                                Server Status
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href='https://support.veterandb.com'
-                                                className='text-inherit hover:underline font-normal'
-                                                isExternal
-                                            >
-                                                Support
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </div>
+                                {footerColumns.map((column) => (
+                                    <div className='footer-menu-col col-span-12 lg:col-span-4' key={column.title}>
+                                        <h2 className='text-xl font-bold mb-2 text-white'>{column.title}</h2>
+                                        <ul className='space-y-1 text-white'>
+                                            {column.links.map((link) => (
+                                                <li key={link.label}>
+                                                    <Link
+                                                        href={link.href}
+                                                        className='text-inherit hover:underline font-normal'
+                                                        isExternal={link.isExternal}
+                                                    >
+                                                        {link.label}
+                                                    </Link>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -230,10 +125,9 @@ export default class Footer extends React.Component {
                 <div className='copyright-row bg-black w-full'>
                     <div className='container mx-auto pt-2 pb-1 px-4'>
                         <div className='copyright-wrapper grid grid-cols-12 gap-4 pt-1 text-white text-lg'>
-                            <div className='copyright-line col-span-12 sm:col-span-6 md:col-span-4'>
+                            <div className='copyright-line col-span-12 sm:col-span-6 md:col-span-8'>
                                 <p className='font-light text-sm text-white'>
-                                    Copyright &copy; 2020-
-                                    {new Date().getFullYear()} &middot; Veteran Database &middot; A&nbsp;
+                                    Copyright &copy; {copyrightYears} &middot;&nbsp;
                                     <Link
                                         href='https://carbondigital.us'
                                         className='text-sm text-inherit hover:underline'
@@ -241,85 +135,20 @@ export default class Footer extends React.Component {
                                     >
                                         Carbon Digital
                                     </Link>
-                                    &nbsp;Project &middot; All Rights Reserved.
+                                    &nbsp;&middot; Mayday Command is released under the&nbsp;
+                                    <Link
+                                        href={`${repositoryURL}/blob/main/license.md`}
+                                        className='text-sm text-inherit hover:underline'
+                                        isExternal
+                                    >
+                                        MIT License
+                                    </Link>
+                                    .
                                 </p>
                             </div>
 
-                            <div className='social-line col-span-12 sm:col-span-6 md:col-span-8 uppercase'>
-                                <ul id='footer-social-list' className='flex justify-end space-x-0 text-white'>
-                                    <li className='font-bold p-1 text-base'>
-                                        <Link
-                                            href='https://www.facebook.com/veterandb'
-                                            className='text-inherit hover:underline'
-                                            isExternal
-                                        >
-                                            <Facebook className='fill-white' size={24} />
-                                            <span className='sr-only'>Facebook (opens in a new window)</span>
-                                        </Link>
-                                    </li>
-                                    <li className='font-bold p-1 text-base'>
-                                        <Link
-                                            href='https://www.instagram.com/veterandatabase/'
-                                            className='text-inherit hover:underline'
-                                            isExternal
-                                        >
-                                            <Instagram className='fill-white' size={24} />
-                                            <span className='sr-only'>Instagram (opens in a new window)</span>
-                                        </Link>
-                                    </li>
-                                    <li className='font-bold p-1 text-base'>
-                                        <Link
-                                            href='https://www.linkedin.com/company/veterandb/'
-                                            className='text-inherit hover:underline'
-                                            isExternal
-                                        >
-                                            <LinkedIn className='fill-white' size={24} />
-                                            <span className='sr-only'>LinkedIn (opens in a new window)</span>
-                                        </Link>
-                                    </li>
-                                    <li className='font-bold p-1 text-base'>
-                                        <Link
-                                            href='https://medium.com/@mayday-command'
-                                            className='text-inherit hover:underline'
-                                            isExternal
-                                        >
-                                            <Medium className='fill-white' size={24} />
-                                            <span className='sr-only'>Medium (opens in a new window)</span>
-                                        </Link>
-                                    </li>
-                                    <li className='font-bold p-1 text-base'>
-                                        <Link
-                                            href='https://www.reddit.com/r/VeteranDatabase/'
-                                            className='text-inherit hover:underline'
-                                            isExternal
-                                        >
-                                            <Reddit className='fill-white' size={24} />
-                                            <span className='sr-only'>Reddit (opens in a new window)</span>
-                                        </Link>
-                                    </li>
-                                    <li className='font-bold p-1 text-base'>
-                                        <Link
-                                            href='https://twitter.com/VeteranDatabase'
-                                            className='text-inherit hover:underline'
-                                            isExternal
-                                        >
-                                            <XTwitter className='fill-white' size={24} />
-                                            <span className='sr-only'>
-                                                X (formerly Twitter) (opens in a new window)
-                                            </span>
-                                        </Link>
-                                    </li>
-                                    <li className='font-bold p-1 text-base'>
-                                        <Link
-                                            href='https://www.youtube.com/@mayday-command'
-                                            className='text-inherit hover:underline'
-                                            isExternal
-                                        >
-                                            <YouTube className='fill-white' size={24} />
-                                            <span className='sr-only'>YouTube (opens in a new window)</span>
-                                        </Link>
-                                    </li>
-                                </ul>
+                            <div className='social-line col-span-12 sm:col-span-6 md:col-span-4 uppercase'>
+                                <SocialLinks id='footer-social-list' className='justify-end' />
                             </div>
                         </div>
                     </div>
