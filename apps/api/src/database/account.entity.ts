@@ -1,17 +1,27 @@
 // NPM Modules
-import { IsBoolean, IsDate, IsEmail, IsNotEmpty, IsString, IsPhoneNumber, IsNumber } from 'class-validator';
+import { IsBoolean, IsDate, IsEmail, IsEnum, IsNotEmpty, IsString, IsPhoneNumber, IsNumber } from 'class-validator';
 import { Exclude } from 'class-transformer';
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinTable,
+    ManyToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from 'typeorm';
 import 'reflect-metadata';
 
 // Shared Modules
+import AccountRole from '@mayday-command/utils/enums/AccountRole.enum';
 import AccountVerifications from '@mayday-command/utils/interfaces/AccountVerifications.interface';
 
 // Custom Modules
-import Access from './access.entity';
+import Organization from './organization.entity';
 import StrongPassword from 'src/utils/decorators/StrongPassword.decorator';
 
-/** A person who signs in to Mayday Command. What they can do comes from their {@link Access} grants. */
+/** A person who signs in to Mayday Command. What they can do comes from their one {@link AccountRole}, and which
+ * customer organizations they belong to from {@link Account.organizationList}. */
 @Entity()
 export default class Account {
     /** Primary key. */
@@ -47,6 +57,12 @@ export default class Account {
     })
     @IsBoolean()
     isActive: boolean;
+
+    /** The account's one role. Null until an invitation, an admin or first-admin setup gives it one; an account with
+     * no role can sign in but reaches no role-protected route. */
+    @Column({ type: 'enum', enum: AccountRole, nullable: true, default: null })
+    @IsEnum(AccountRole)
+    role?: AccountRole | null;
 
     /** Argon2 hash of the account's password. Never serialized: `select: false` only keeps it out of queries, not out
      * of the entity `save()` returns (e.g. from `register`). */
@@ -140,7 +156,8 @@ export default class Account {
     @UpdateDateColumn()
     updatedOn: Date;
 
-    /** Every {@link Access} grant held by this account. Virtual: not a real column, the FK lives on `Access`. */
-    @OneToMany(() => Access, (access) => access.account)
-    accessList?: Access[];
+    /** Every customer {@link Organization} this account belongs to. Stored in a join table, not a column here. */
+    @ManyToMany(() => Organization, (organization) => organization.accountList)
+    @JoinTable()
+    organizationList?: Organization[];
 }

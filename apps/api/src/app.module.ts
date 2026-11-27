@@ -8,23 +8,18 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Custom Modules
-import AccessModule from './access/access.module';
 import AccountModule from './account/account.module';
 import AuthModule from './auth/auth.module';
-import Access from './database/access.entity';
 import Account from './database/account.entity';
 import Invitation from './database/invitation.entity';
 import MFAChallenge from './database/mfa-challenge.entity';
-import ModuleEntity from './database/module.entity';
 import Organization from './database/organization.entity';
-import Role from './database/role.entity';
 import EmailModule from './email/email.module';
 import InvitationModule from './invitation/invitation.module';
 import LoggerModule from './logger/logger.module';
 import MessageQueueModule from './message-queue/mq.module';
 import MFAModule from './mfa/mfa.module';
 import OrganizationModule from './organization/organization.module';
-import RoleModule from './role/role.module';
 import JWTExceptionFilter from './utils/filters/JWTException.filter';
 import TypeORMExceptionFilter from './utils/filters/TypeORMException.filter';
 import VerificationModule from './verification/verification.module';
@@ -71,7 +66,7 @@ import VerificationModule from './verification/verification.module';
             username: process.env.DB_USERNAME,
             password: process.env.DB_PASSWORD,
             database: process.env.DB_TABLE,
-            entities: [Access, Account, Invitation, MFAChallenge, ModuleEntity, Organization, Role],
+            entities: [Account, Invitation, MFAChallenge, Organization],
             ssl:
                 process.env.DB_SSL === 'true'
                     ? {
@@ -80,7 +75,6 @@ import VerificationModule from './verification/verification.module';
                     : false,
             synchronize: true
         }),
-        AccessModule,
         AccountModule,
         AuthModule,
         EmailModule,
@@ -89,7 +83,6 @@ import VerificationModule from './verification/verification.module';
         MessageQueueModule,
         MFAModule,
         OrganizationModule,
-        RoleModule,
         VerificationModule
     ],
     controllers: [],

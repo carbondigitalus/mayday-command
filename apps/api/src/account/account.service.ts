@@ -1,5 +1,6 @@
 // NPM Modules
 import {
+    ConflictException,
     ForbiddenException,
     HttpException,
     HttpStatus,
@@ -12,7 +13,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as argon from 'argon2';
 import { Queue } from 'bullmq';
 import { Response } from 'express';
-import { FindOptionsWhere, QueryFailedError, Raw, Repository } from 'typeorm';
+import { FindOptionsWhere, IsNull, QueryFailedError, Raw, Repository } from 'typeorm';
+
+// Shared Modules
+import AccountRole from '@mayday-command/utils/enums/AccountRole.enum';
 
 // Custom Modules
 import AccountLoginDTO from './dto/login.dto';
@@ -26,6 +30,10 @@ import Account from 'src/database/account.entity';
 import LoggerService from 'src/logger/logger.service';
 import MFAService from 'src/mfa/mfa.service';
 import VerificationService from 'src/verification/verification.service';
+
+/** Postgres advisory lock key held for the length of first-admin setup, so two setup requests on a fresh install
+ * can't both become the admin. Any fixed number works; it only has to be the same for every setup request. */
+const setupAdminLockKey = 4_031_998;
 
 /** Everyone who asks for a password reset gets this answer, whether or not the email belongs to an account. */
 const passwordForgotMessage = 'If an account exists for that email, please check your inbox for instructions.';
@@ -138,7 +146,8 @@ export default class AccountService {
                 firstName: true,
                 lastName: true,
                 email: true,
-                isActive: true
+                isActive: true,
+                role: true
             },
             skip: (page - 1) * limit,
             take: limit
@@ -149,21 +158,24 @@ export default class AccountService {
         return { data, total, page, limit };
     }
 
-    /** Full account detail lookup by id, for the platform:admin
+    /** Full account detail lookup by id, with its role and the organizations it belongs to, for the platform:admin
      * account-administration UI. */
     async adminFindOne(accountID: string) {
         const logContext = 'AccountService-adminFindOne';
 
-        const user = await this.accountRepository.findOne({ where: { id: accountID } });
+        const account = await this.accountRepository.findOne({
+            where: { id: accountID },
+            relations: { organizationList: true }
+        });
 
-        if (!user) {
+        if (!account) {
             this.logger.warn(`Attempt to view non-existent account: ${accountID}`, logContext);
             throw new NotFoundException('Account not found.');
         }
 
         this.logger.debug(`Successfully retrieved account: ${accountID}`, logContext);
 
-        return user;
+        return account;
     }
 
     /** Checks the email and password and returns a session, or a second-factor challenge when 2FA has lapsed.
@@ -246,7 +258,7 @@ export default class AccountService {
      * reads the session cookie ever sees an account that skipped it. A session
      * issued here records `lastLoginAt`; after a challenge, MFA verification does. */
     private async completeLogin(account: Account, res: Response) {
-        if (await this.mfaService.isChallengeRequired(account)) {
+        if (this.mfaService.isChallengeRequired(account)) {
             return this.mfaService.startChallenge(account);
         }
 
@@ -467,6 +479,62 @@ export default class AccountService {
         return this.completeLogin(account, res);
     }
 
+    /** Whether the install still needs its first platform:admin, so the portal knows to show first-run setup. */
+    async isSetupAdminRequired() {
+        const hasAdmin = await this.accountRepository.exists({ where: { role: AccountRole.PlatformAdmin } });
+
+        return { setupRequired: !hasAdmin };
+    }
+
+    /** Creates the install's first account as platform:admin and signs it in. It works only while no platform:admin
+     * exists: the check and the insert run in one transaction holding a Postgres advisory lock, so two requests at
+     * once can't both succeed. Email verification starts the same way as at registration.
+     * @throws ForbiddenException when the passwords differ or the email is already used.
+     * @throws ConflictException once a platform:admin exists. */
+    async setupAdmin(data: AccountRegisterDTO, res: Response) {
+        const logContext = 'AccountService-setupAdmin';
+
+        if (data.password !== data.passwordConfirm) {
+            this.logger.warn('Admin setup failed: Passwords do not match.', logContext);
+            throw new ForbiddenException('Passwords do not match.');
+        }
+
+        const email = data.email.toLowerCase();
+        const password = await argon.hash(data.password);
+
+        const account = await this.accountRepository.manager.transaction(async (manager) => {
+            await manager.query('SELECT pg_advisory_xact_lock($1)', [setupAdminLockKey]);
+
+            if (await manager.exists(Account, { where: { role: AccountRole.PlatformAdmin } })) {
+                this.logger.warn('Admin setup refused: The install already has an admin.', logContext);
+                throw new ConflictException('This install already has an admin.');
+            }
+
+            if (await manager.exists(Account, { where: { email } })) {
+                this.logger.warn('Admin setup refused: The email is already used.', logContext);
+                throw new ForbiddenException('An account already uses this email address.');
+            }
+
+            return manager.save(
+                manager.create(Account, {
+                    email,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    password,
+                    role: AccountRole.PlatformAdmin
+                })
+            );
+        });
+
+        const { emailVerificationToken } = await this.verificationService.issueOneTimePasscode(account);
+
+        const session = await this.completeLogin(account, res);
+
+        this.logger.log(`First platform:admin set up: ${account.id}`, logContext);
+
+        return { ...session, emailVerificationToken };
+    }
+
     /** Creates an account with an argon2-hashed password. The welcome email waits until the email address is
      * verified, so this issues a one-time passcode instead.
      *
@@ -529,27 +597,50 @@ export default class AccountService {
         }
     }
 
-    /** The account behind the session cookie, with its grants. The caller is whoever the cookie says, never someone
+    /** The account behind the session cookie, with the organizations it belongs to. The caller is whoever the cookie says, never someone
      * named in the request.
      * @throws ForbiddenException when the account no longer exists. */
     async get(requester: Account) {
         const logContext = 'AccountService-get';
 
-        const user = await this.accountRepository.findOne({
+        const account = await this.accountRepository.findOne({
             where: { id: requester.id },
-            relations: {
-                accessList: { organization: true, role: { module: true } }
-            }
+            relations: { organizationList: true }
         });
 
-        if (!user) {
-            this.logger.warn(`Get attempt failed: No user found for ID: ${requester.id}`, logContext);
-            throw new ForbiddenException('Unable to find user.');
+        if (!account) {
+            this.logger.warn(`Get attempt failed: No account found for ID: ${requester.id}`, logContext);
+            throw new ForbiddenException('Unable to find account.');
         }
 
         this.logger.debug(`Successfully retrieved account for ID: ${requester.id}`, logContext);
 
-        return user;
+        return account;
+    }
+
+    /** Gives the account `role` only if it has none, so this never changes an existing role, and adds it to
+     * `organizationID` when one is given and it doesn't already belong. Used by invitation acceptance and organization
+     * creation. */
+    async assignRole(accountID: string, role: AccountRole, organizationID?: string) {
+        const logContext = 'AccountService-assignRole';
+
+        if (organizationID) {
+            const isMember = await this.accountRepository.exists({
+                where: { id: accountID, organizationList: { id: organizationID } }
+            });
+
+            if (!isMember) {
+                await this.accountRepository
+                    .createQueryBuilder()
+                    .relation(Account, 'organizationList')
+                    .of(accountID)
+                    .add(organizationID);
+            }
+        }
+
+        await this.accountRepository.update({ id: accountID, role: IsNull() }, { role });
+
+        this.logger.debug(`Role and membership applied to account ${accountID}`, logContext);
     }
 
     /** The ID of every account.

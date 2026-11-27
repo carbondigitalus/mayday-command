@@ -15,6 +15,9 @@ import {
 } from '@nestjs/common';
 import { Response as ExpressResponse } from 'express';
 
+// Shared Modules
+import AccountRole from '@mayday-command/utils/enums/AccountRole.enum';
+
 // Custom Modules
 import AccountService from './account.service';
 import AccountLoginDTO from './dto/login.dto';
@@ -39,7 +42,7 @@ export default class AccountController {
 
     /** `GET /account`: the ID of every account. platform:admin or platform:agent only. */
     @UseGuards(JWTAccessTokenGuard, RolesGuard)
-    @RequiresRole(['platform:admin', 'platform:agent'])
+    @RequiresRole([AccountRole.PlatformAdmin, AccountRole.PlatformAgent])
     @Get('/')
     accountReadAll() {
         return this.accountService.readAll();
@@ -56,7 +59,7 @@ export default class AccountController {
     /** `POST /account/activate`: activates the signed-in account. platform:admin or platform:agent only, until
      * customer self-service activation lands with the admin settings table. */
     @UseGuards(JWTAccessTokenGuard, RolesGuard)
-    @RequiresRole(['platform:admin', 'platform:agent'])
+    @RequiresRole([AccountRole.PlatformAdmin, AccountRole.PlatformAgent])
     @Post('activate')
     accountActivate(@GetAccountData('account') account: Account) {
         return this.accountService.activate(account, account.id);
@@ -65,16 +68,17 @@ export default class AccountController {
     /** `DELETE /account/deactivate`: deactivates the signed-in account. platform:admin or platform:agent only, until
      * customer self-service deactivation lands with the admin settings table. */
     @UseGuards(JWTAccessTokenGuard, RolesGuard)
-    @RequiresRole(['platform:admin', 'platform:agent'])
+    @RequiresRole([AccountRole.PlatformAdmin, AccountRole.PlatformAgent])
     @Delete('deactivate')
     accountDeactivate(@GetAccountData('account') account: Account) {
         return this.accountService.deactivate(account, account.id);
     }
 
-    /** `GET /account/admin`: a page of accounts, searched by email, first or last name and filtered by `isActive`.
-     * platform:admin only. An account's roles and organization access are at `GET /access/account/:accountID`. */
+    /** `GET /account/admin`: a page of accounts with their roles, searched by email, first or last name and filtered
+     * by `isActive`. platform:admin only. `GET /account/admin/:accountID` adds the organizations an account belongs
+     * to. */
     @UseGuards(JWTAccessTokenGuard, RolesGuard)
-    @RequiresRole('platform:admin')
+    @RequiresRole(AccountRole.PlatformAdmin)
     @Get('admin')
     accountAdminSearch(
         @Query('isActive') isActive?: string,
@@ -87,7 +91,7 @@ export default class AccountController {
 
     /** `GET /account/admin/:accountID`: one account by ID. platform:admin only. */
     @UseGuards(JWTAccessTokenGuard, RolesGuard)
-    @RequiresRole('platform:admin')
+    @RequiresRole(AccountRole.PlatformAdmin)
     @Get('admin/:accountID')
     accountAdminReadOne(@Param('accountID') accountID: string) {
         return this.accountService.adminFindOne(accountID);
@@ -95,7 +99,7 @@ export default class AccountController {
 
     /** `PATCH /account/admin/:accountID/activate`: activates any account. platform:admin only. */
     @UseGuards(JWTAccessTokenGuard, RolesGuard)
-    @RequiresRole('platform:admin')
+    @RequiresRole(AccountRole.PlatformAdmin)
     @Patch('admin/:accountID/activate')
     accountAdminActivate(@Param('accountID') accountID: string, @GetAccountData('account') admin: Account) {
         return this.accountService.activate({ id: accountID }, admin.id);
@@ -103,7 +107,7 @@ export default class AccountController {
 
     /** `PATCH /account/admin/:accountID/deactivate`: deactivates any account. platform:admin only. */
     @UseGuards(JWTAccessTokenGuard, RolesGuard)
-    @RequiresRole('platform:admin')
+    @RequiresRole(AccountRole.PlatformAdmin)
     @Patch('admin/:accountID/deactivate')
     accountAdminDeactivate(@Param('accountID') accountID: string, @GetAccountData('account') admin: Account) {
         return this.accountService.deactivate({ id: accountID }, admin.id);
@@ -156,6 +160,21 @@ export default class AccountController {
     @Post('register')
     accountRegister(@Body() data: AccountRegisterDTO) {
         return this.accountService.register(data);
+    }
+
+    /** `GET /account/setup-admin`: whether the install still needs its first admin. Public, so the portal can decide
+     * whether to show first-run setup before anyone has signed in. */
+    @Get('setup-admin')
+    accountSetupAdminStatus() {
+        return this.accountService.isSetupAdminRequired();
+    }
+
+    /** `POST /account/setup-admin`: creates the install's first account as platform:admin and signs it in. Refused
+     * with 409 once an admin exists. */
+    @StrictThrottle()
+    @Post('setup-admin')
+    accountSetupAdmin(@Body() data: AccountRegisterDTO, @Res({ passthrough: true }) res: ExpressResponse) {
+        return this.accountService.setupAdmin(data, res);
     }
 
     /** `PATCH /account/update`: updates the signed-in account's first and last name. */

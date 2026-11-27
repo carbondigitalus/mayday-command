@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import AccountController from './account.controller';
 import AccountService from './account.service';
 import AuthModule from 'src/auth/auth.module';
-import Access from 'src/database/access.entity';
 import Account from 'src/database/account.entity';
 import MessageQueueModule from 'src/message-queue/mq.module';
 import MFAModule from 'src/mfa/mfa.module';
@@ -18,7 +17,7 @@ import VerificationModule from 'src/verification/verification.module';
         forwardRef(() => AuthModule),
         MessageQueueModule,
         MFAModule,
-        TypeOrmModule.forFeature([Access, Account]),
+        TypeOrmModule.forFeature([Account]),
         VerificationModule
     ],
     exports: [TypeOrmModule],
