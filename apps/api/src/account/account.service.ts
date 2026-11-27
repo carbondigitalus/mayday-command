@@ -2,8 +2,6 @@
 import {
     ConflictException,
     ForbiddenException,
-    HttpException,
-    HttpStatus,
     Injectable,
     InternalServerErrorException,
     NotFoundException
@@ -29,6 +27,7 @@ import AuthService from 'src/auth/auth.service';
 import Account from 'src/database/account.entity';
 import LoggerService from 'src/logger/logger.service';
 import MFAService from 'src/mfa/mfa.service';
+import TooManyRequestsException from 'src/utils/exceptions/TooManyRequests.exception';
 import VerificationService from 'src/verification/verification.service';
 
 /** Postgres advisory lock key held for the length of first-admin setup, so two setup requests on a fresh install
@@ -186,7 +185,8 @@ export default class AccountService {
      *
      * @throws ForbiddenException with the generic "Email or password incorrect." for an unknown email or wrong
      * password, or "Account is deactivated.".
-     * @throws HttpException 429 when the account is locked, or this attempt reached {@link AccountService.maxPasswordAttempts}. */
+     * @throws TooManyRequestsException when the account is locked, or this attempt reached
+     * {@link AccountService.maxPasswordAttempts}. */
     async login(data: AccountLoginDTO, res: Response) {
         const logContext = 'AccountService-login';
 
@@ -286,7 +286,7 @@ export default class AccountService {
      * parallel guesses can't all read the same count.
      * @throws ForbiddenException when the account no longer exists, a password is wrong, the new and confirmed
      * passwords differ, or the new one equals the current one.
-     * @throws HttpException 429 when locked. */
+     * @throws TooManyRequestsException when locked. */
     async passwordChange(accountID: string, data: AccountPasswordChangeDTO, res: Response) {
         const logContext = 'AccountService-passwordChange';
 
@@ -378,13 +378,9 @@ export default class AccountService {
     private lockedException(lockedUntil: Date) {
         const retryAfterSeconds = Math.max(1, Math.ceil((lockedUntil.getTime() - Date.now()) / 1000));
 
-        return new HttpException(
-            {
-                statusCode: HttpStatus.TOO_MANY_REQUESTS,
-                message: `Too many incorrect passwords. Please try again in ${Math.ceil(retryAfterSeconds / 60)} minutes.`,
-                retryAfterSeconds
-            },
-            HttpStatus.TOO_MANY_REQUESTS
+        return new TooManyRequestsException(
+            `Too many incorrect passwords. Please try again in ${Math.ceil(retryAfterSeconds / 60)} minutes.`,
+            retryAfterSeconds
         );
     }
 
@@ -635,8 +631,8 @@ export default class AccountService {
         }
     }
 
-    /** The account behind the session cookie, with the organizations it belongs to. The caller is whoever the cookie says, never someone
-     * named in the request.
+    /** The account behind the session cookie, with the organizations it belongs to. The caller is whoever the cookie
+     * says, never someone named in the request.
      * @throws ForbiddenException when the account no longer exists. */
     async get(requester: Account) {
         const logContext = 'AccountService-get';

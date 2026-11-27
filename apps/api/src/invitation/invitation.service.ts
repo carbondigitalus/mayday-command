@@ -82,9 +82,9 @@ export default class InvitationService {
         return this.completeAcceptance(invitation, acceptingAccountID, logContext);
     }
 
-    /** Refuses an invitation that accepting couldn't act on: `invitedEmail` already belongs to the organization, or, for
-     * a platform invitation, already has a role (accepting never changes an existing role; a platform admin changes it
-     * instead). An email with no account yet always passes. */
+    /** Refuses an invitation that accepting couldn't act on: `invitedEmail` already belongs to the organization, or,
+     * for a platform invitation, already has a role (accepting never changes an existing role; a platform admin
+     * changes it instead). An email with no account yet always passes. */
     private async assertInviteNeeded(invitedEmail: string, logContext: string, organizationID?: string) {
         const alreadyCovered = await this.accountRepository.exists({
             where: organizationID
@@ -168,7 +168,8 @@ export default class InvitationService {
      * invitation to an account that already has a role. Any still-pending invitation for the same email and
      * organization is revoked first, so sending again works as "resend". The token goes only into the email, never
      * into this response; to send the link again, create the invitation again.
-     * @throws ConflictException when the invitee is already a member, or already has a role for a platform invitation. */
+     * @throws ConflictException when the invitee is already a member, or already has a role for a platform
+     * invitation. */
     async create(invitedByAccountID: string, data: InvitationCreateDTO, organizationID?: string) {
         const logContext = 'InvitationService-create';
 
@@ -286,9 +287,9 @@ export default class InvitationService {
         };
     }
 
-    /** Every Pending, unexpired invitation addressed to the signed-in `account`'s email: its own "my invitations" list, for the
-     * in-app Invites tab. The account always comes from the session, never the request, so no one can read another
-     * account's invitations. */
+    /** Every Pending, unexpired invitation addressed to the signed-in `account`'s email: its own "my invitations"
+     * list, for the in-app Invites tab. The account always comes from the session, never the request, so no one can
+     * read another account's invitations. */
     async readAccountAll(account: Account) {
         const logContext = 'InvitationService-readAccountAll';
 

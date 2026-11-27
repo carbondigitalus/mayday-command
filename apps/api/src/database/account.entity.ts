@@ -127,22 +127,23 @@ export default class Account {
     @Column({ type: 'jsonb', nullable: true, default: null })
     verifications?: AccountVerifications;
 
-    /** Argon2 hash of the pending one-time passcode. Transient challenge
-     * state, kept out of `verifications` (which is returned to the browser)
-     * and out of default selects so the hash never leaves the API. */
+    /** Argon2 hash of the pending email verification code. Only email verification uses these three columns; login
+     * 2FA codes live in their own `MFAChallenge` table. The account holds one pending code at a time, so when phone
+     * verification arrives, these should move into a table of their own rather than gain phone copies. Transient
+     * challenge state, kept out of `verifications` (which is returned to the browser) and out of default selects so the
+     * hash never leaves the API. */
     @Exclude()
     @Column({ type: 'varchar', nullable: true, default: null, select: false })
     @IsString()
     oneTimePasscode?: string | null;
 
-    /** When the pending one-time passcode stops working. Null when no passcode is pending. */
+    /** When the pending email verification code stops working. Null when no code is pending. */
     @Exclude()
     @Column({ type: 'timestamp', nullable: true, default: null, select: false })
     @IsDate()
     oneTimePasscodeExpiration?: Date | null;
 
-    /** Wrong guesses against the current passcode; reset whenever a new one
-     * is issued. */
+    /** Wrong guesses against the current email verification code; reset whenever a new one is issued. */
     @Exclude()
     @Column({ type: 'int', default: 0, select: false })
     @IsNumber()

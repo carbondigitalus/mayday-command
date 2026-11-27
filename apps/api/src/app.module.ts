@@ -21,6 +21,7 @@ import MessageQueueModule from './message-queue/mq.module';
 import MFAModule from './mfa/mfa.module';
 import OrganizationModule from './organization/organization.module';
 import JWTExceptionFilter from './utils/filters/JWTException.filter';
+import TooManyRequestsFilter from './utils/filters/TooManyRequests.filter';
 import TypeORMExceptionFilter from './utils/filters/TypeORMException.filter';
 import VerificationModule from './verification/verification.module';
 
@@ -98,6 +99,10 @@ import VerificationModule from './verification/verification.module';
         {
             provide: APP_FILTER,
             useClass: TypeORMExceptionFilter
+        },
+        {
+            provide: APP_FILTER,
+            useClass: TooManyRequestsFilter
         }
     ]
 })
