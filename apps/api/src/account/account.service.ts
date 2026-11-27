@@ -423,7 +423,8 @@ export default class AccountService {
      * decrypted and verified as a JWT, then checked against the argon2 hash stored when it was issued, so only the
      * account's latest link works, and only once. A deactivated account is refused before anything changes, the same as
      * at login. A successful reset also clears any login lockout, since the new password was set through the account's
-     * own email.
+     * own email, and counts as a fresh 2FA check for the same reason, the same as verifying the email: the person isn't
+     * sent a second code to the inbox they just used.
      * @throws ForbiddenException when the token is invalid, expired or no longer current, the account is deactivated,
      * or the passwords differ. */
     async passwordReset(data: AccountPasswordResetDTO, res: Response) {
@@ -453,11 +454,13 @@ export default class AccountService {
         }
 
         const hashedPassword = await argon.hash(data.password);
+        const resetAt = new Date();
 
         const updatedAccount = await this.accountRepository.preload({
             id: account.id,
+            lastMFAValidatedAt: resetAt,
             password: hashedPassword,
-            passwordChangedAt: new Date(),
+            passwordChangedAt: resetAt,
             passwordResetToken: null,
             loginAttempts: 0,
             loginLockedUntil: null
@@ -471,6 +474,8 @@ export default class AccountService {
             email: updatedAccount.email
         });
         this.logger.debug(`Password reset successful for ${account.id}`, logContext);
+
+        account.lastMFAValidatedAt = resetAt;
 
         return this.completeLogin(account, res);
     }
