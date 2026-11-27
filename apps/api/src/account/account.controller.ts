@@ -9,12 +9,11 @@ import {
     Patch,
     Post,
     Query,
-    Request,
     Res,
     UseGuards,
     UseInterceptors
 } from '@nestjs/common';
-import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
+import { Response as ExpressResponse } from 'express';
 
 // Custom Modules
 import AccountService from './account.service';
@@ -26,7 +25,7 @@ import AccountRegisterDTO from './dto/register.dto';
 import AccountUpdateDTO from './dto/update.dto';
 import Account from 'src/database/account.entity';
 import AllowUnverifiedEmail from 'src/utils/decorators/AllowUnverifiedEmail.decorator';
-import GetUserData from 'src/utils/decorators/GetUserData.decorator';
+import GetAccountData from 'src/utils/decorators/GetAccountData.decorator';
 import RequiresRole from 'src/utils/decorators/RequiresRole.decorator';
 import StrictThrottle from 'src/utils/decorators/StrictThrottle.decorator';
 import JWTAccessTokenGuard from 'src/utils/guards/JWTAccessTokenGuard.guard';
@@ -50,7 +49,7 @@ export default class AccountController {
     @UseGuards(JWTAccessTokenGuard)
     @AllowUnverifiedEmail()
     @Post('/')
-    accountRetrieve(@GetUserData('user') requester: Account) {
+    accountRetrieve(@GetAccountData('account') requester: Account) {
         return this.accountService.get(requester);
     }
 
@@ -59,8 +58,8 @@ export default class AccountController {
     @UseGuards(JWTAccessTokenGuard, RolesGuard)
     @RequiresRole(['platform:admin', 'platform:agent'])
     @Post('activate')
-    accountActivate(@GetUserData('user') user: Account) {
-        return this.accountService.activate(user, user.id);
+    accountActivate(@GetAccountData('account') account: Account) {
+        return this.accountService.activate(account, account.id);
     }
 
     /** `DELETE /account/deactivate`: deactivates the signed-in account. platform:admin or platform:agent only, until
@@ -68,8 +67,8 @@ export default class AccountController {
     @UseGuards(JWTAccessTokenGuard, RolesGuard)
     @RequiresRole(['platform:admin', 'platform:agent'])
     @Delete('deactivate')
-    accountDeactivate(@GetUserData('user') user: Account) {
-        return this.accountService.deactivate(user, user.id);
+    accountDeactivate(@GetAccountData('account') account: Account) {
+        return this.accountService.deactivate(account, account.id);
     }
 
     /** `GET /account/admin`: a page of accounts, searched by email, first or last name and filtered by `isActive`.
@@ -98,8 +97,7 @@ export default class AccountController {
     @UseGuards(JWTAccessTokenGuard, RolesGuard)
     @RequiresRole('platform:admin')
     @Patch('admin/:accountID/activate')
-    accountAdminActivate(@Param('accountID') accountID: string, @Request() req: ExpressRequest) {
-        const admin = req.user as Account;
+    accountAdminActivate(@Param('accountID') accountID: string, @GetAccountData('account') admin: Account) {
         return this.accountService.activate({ id: accountID }, admin.id);
     }
 
@@ -107,28 +105,23 @@ export default class AccountController {
     @UseGuards(JWTAccessTokenGuard, RolesGuard)
     @RequiresRole('platform:admin')
     @Patch('admin/:accountID/deactivate')
-    accountAdminDeactivate(@Param('accountID') accountID: string, @Request() req: ExpressRequest) {
-        const admin = req.user as Account;
+    accountAdminDeactivate(@Param('accountID') accountID: string, @GetAccountData('account') admin: Account) {
         return this.accountService.deactivate({ id: accountID }, admin.id);
     }
 
     /** `POST /account/login`: sets the session cookie, or returns a second-factor challenge when 2FA is due. */
     @StrictThrottle()
     @Post('login')
-    accountLogin(
-        @Body() data: AccountLoginDTO,
-        @Request() req: ExpressRequest,
-        @Res({ passthrough: true }) res: ExpressResponse
-    ) {
-        return this.accountService.login(data, req, res);
+    accountLogin(@Body() data: AccountLoginDTO, @Res({ passthrough: true }) res: ExpressResponse) {
+        return this.accountService.login(data, res);
     }
 
     /** `POST /account/logout`: clears the session cookie. Allowed before the email is verified. */
     @UseGuards(JWTAccessTokenGuard)
     @AllowUnverifiedEmail()
     @Post('logout')
-    accountLogout(@Request() req: ExpressRequest, @Res() res: ExpressResponse) {
-        return this.accountService.logout(req, res);
+    accountLogout(@Res({ passthrough: true }) res: ExpressResponse) {
+        return this.accountService.logout(res);
     }
 
     /** `PATCH /account/password-change`: changes the signed-in account's password and reissues the session cookie. */
@@ -136,12 +129,11 @@ export default class AccountController {
     @UseGuards(JWTAccessTokenGuard)
     @Patch('password-change')
     accountPasswordChange(
-        @GetUserData('user') requester: Account,
+        @GetAccountData('account') requester: Account,
         @Body() data: AccountPasswordChangeDTO,
-        @Request() req: ExpressRequest,
         @Res({ passthrough: true }) res: ExpressResponse
     ) {
-        return this.accountService.passwordChange(requester.id, data, req, res);
+        return this.accountService.passwordChange(requester.id, data, res);
     }
 
     /** `POST /account/password-forgot`: emails a password reset link. Answers the same whether or not the email
@@ -155,12 +147,8 @@ export default class AccountController {
     /** `PATCH /account/password-reset`: sets a new password from the emailed reset token and signs the account in. */
     @StrictThrottle()
     @Patch('password-reset')
-    accountPasswordReset(
-        @Body() data: AccountPasswordResetDTO,
-        @Request() req: ExpressRequest,
-        @Res({ passthrough: true }) res: ExpressResponse
-    ) {
-        return this.accountService.passwordReset(data, req, res);
+    accountPasswordReset(@Body() data: AccountPasswordResetDTO, @Res({ passthrough: true }) res: ExpressResponse) {
+        return this.accountService.passwordReset(data, res);
     }
 
     /** `POST /account/register`: creates an account and starts email verification. */
@@ -173,7 +161,7 @@ export default class AccountController {
     /** `PATCH /account/update`: updates the signed-in account's first and last name. */
     @UseGuards(JWTAccessTokenGuard)
     @Patch('update')
-    accountUpdateSettings(@GetUserData('user') requester: Account, @Body() data: AccountUpdateDTO) {
+    accountUpdateSettings(@GetAccountData('account') requester: Account, @Body() data: AccountUpdateDTO) {
         return this.accountService.updateAccount(data, requester.id);
     }
 }

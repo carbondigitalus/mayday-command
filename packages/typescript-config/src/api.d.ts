@@ -30,7 +30,7 @@ declare namespace NodeJS {
         EXTERNAL_STORAGE_KEY: string;
         EXTERNAL_STORAGE_URL: string;
         // JWTs
-        JWT_COOKIE_EXPIRES_IN: number;
+        JWT_ENCRYPTION_KEY: string;
         JWT_TOKEN_ACCESS_EXPIRES_IN: string;
         JWT_TOKEN_ACCESS_SECRET: string;
         JWT_TOKEN_EMAIL_VERIFY_EXPIRES_IN: string;
@@ -41,8 +41,6 @@ declare namespace NodeJS {
         JWT_TOKEN_MFA_CHALLENGE_SECRET: string;
         JWT_TOKEN_PASSWORD_RESET_EXPIRES_IN: string;
         JWT_TOKEN_PASSWORD_RESET_SECRET: string;
-        JWT_TOKEN_REFRESH_EXPIRES_IN: string;
-        JWT_TOKEN_REFRESH_SECRET: string;
         // MFA
         MFA_REVALIDATION_DAYS: string;
         // NextJS Items

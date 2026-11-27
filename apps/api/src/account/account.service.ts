@@ -11,7 +11,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon from 'argon2';
 import { Queue } from 'bullmq';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { FindOptionsWhere, QueryFailedError, Raw, Repository } from 'typeorm';
 
 // Custom Modules
@@ -175,7 +175,7 @@ export default class AccountService {
      * @throws ForbiddenException with the generic "Email or password incorrect." for an unknown email or wrong
      * password, or "Account is deactivated.".
      * @throws HttpException 429 when the account is locked, or this attempt reached {@link AccountService.maxPasswordAttempts}. */
-    async login(data: AccountLoginDTO, req: Request, res: Response) {
+    async login(data: AccountLoginDTO, res: Response) {
         const logContext = 'AccountService-login';
 
         if (!data.email) {
@@ -234,7 +234,7 @@ export default class AccountService {
             throw new ForbiddenException('Account is deactivated.');
         }
 
-        const session = await this.completeLogin(account, req, res);
+        const session = await this.completeLogin(account, res);
 
         this.logger.debug(`Login successful for ${data.email}`, logContext);
 
@@ -245,21 +245,21 @@ export default class AccountService {
      * lapsed it returns a challenge and issues no cookie, so nothing that
      * reads the session cookie ever sees an account that skipped it. A session
      * issued here records `lastLoginAt`; after a challenge, MFA verification does. */
-    private async completeLogin(account: Account, req: Request, res: Response) {
+    private async completeLogin(account: Account, res: Response) {
         if (await this.mfaService.isChallengeRequired(account)) {
             return this.mfaService.startChallenge(account);
         }
 
         await this.accountRepository.update(account.id, { lastLoginAt: new Date() });
 
-        return this.authService.createCookieLogin(account, req, res);
+        return this.authService.createCookieLogin(account, res);
     }
 
     /** Clears the session cookie. */
-    logout(req: Request, res: Response) {
+    logout(res: Response) {
         const logContext = 'AccountService-logout';
 
-        const result = this.authService.createCookieLogout(req, res);
+        const result = this.authService.createCookieLogout(res);
 
         this.logger.debug('User logged out successfully', logContext);
 
@@ -275,7 +275,7 @@ export default class AccountService {
      * @throws ForbiddenException when the account no longer exists, a password is wrong, the new and confirmed
      * passwords differ, or the new one equals the current one.
      * @throws HttpException 429 when locked. */
-    async passwordChange(accountID: string, data: AccountPasswordChangeDTO, req: Request, res: Response) {
+    async passwordChange(accountID: string, data: AccountPasswordChangeDTO, res: Response) {
         const logContext = 'AccountService-passwordChange';
 
         const account = await this.accountRepository.findOne({
@@ -348,7 +348,7 @@ export default class AccountService {
         });
         this.logger.debug(`Password updated successfully for ${account.email}`, logContext);
 
-        return this.authService.createCookieLogin(account, req, res);
+        return this.authService.createCookieLogin(account, res);
     }
 
     /** Atomic, so concurrent guesses can't each read the same count and slip
@@ -394,12 +394,11 @@ export default class AccountService {
             return { message: passwordForgotMessage };
         }
 
-        const token = await this.authService.generateTokenPasswordReset(account.id, account.email);
+        const token = await this.authService.generateTokenPasswordReset(account.id);
 
         const updatedAccount = await this.accountRepository.preload({
             id: account.id,
-            passwordResetToken: token.passwordResetToken,
-            passwordResetExpires: token.passwordResetExpires
+            passwordResetToken: await argon.hash(token.passwordResetToken)
         });
 
         await this.accountRepository.save(updatedAccount);
@@ -415,60 +414,60 @@ export default class AccountService {
         return { message: passwordForgotMessage };
     }
 
-    /** Sets a new password from the emailed reset token in `data.token` and signs the user in. A deactivated account
-     * is refused before anything changes, the same as at login. A successful reset also clears any login lockout, since
-     * the new password was set through the account's own email.
-     * @throws ForbiddenException when the token is unknown or expired, the account is deactivated, or the passwords
-     * differ. */
-    async passwordReset(data: AccountPasswordResetDTO, req: Request, res: Response) {
+    /** Sets a new password from the emailed reset token in `data.token` and signs the account in. The token is
+     * decrypted and verified as a JWT, then checked against the argon2 hash stored when it was issued, so only the
+     * account's latest link works, and only once. A deactivated account is refused before anything changes, the same as
+     * at login. A successful reset also clears any login lockout, since the new password was set through the account's
+     * own email.
+     * @throws ForbiddenException when the token is invalid, expired or no longer current, the account is deactivated,
+     * or the passwords differ. */
+    async passwordReset(data: AccountPasswordResetDTO, res: Response) {
         const logContext = 'AccountService-passwordReset';
 
-        const user = await this.accountRepository.findOne({
-            where: { passwordResetToken: data.token }
-        });
+        const decoded = await this.authService.decodeTokenPasswordReset(data.token);
 
-        if (!user) {
-            this.logger.warn('Password reset attempt failed: No account found for the submitted token.', logContext);
-            throw new ForbiddenException('Unable to find user.');
+        const account = await this.accountRepository
+            .createQueryBuilder('account')
+            .addSelect('account.passwordResetToken')
+            .where('account.id = :id', { id: decoded.sub })
+            .getOne();
+
+        if (!account?.passwordResetToken || !(await argon.verify(account.passwordResetToken, data.token))) {
+            this.logger.warn(`Password reset refused for ${decoded.sub}: Token is not the current one.`, logContext);
+            throw new ForbiddenException('This reset link is no longer valid. Try forgot password again.');
         }
 
-        if (!user.isActive) {
-            this.logger.warn(`Password reset refused for ${user.email}: Account is deactivated.`, logContext);
+        if (!account.isActive) {
+            this.logger.warn(`Password reset refused for ${account.email}: Account is deactivated.`, logContext);
             throw new ForbiddenException('Account is deactivated.');
         }
 
         if (data.password !== data.passwordConfirm) {
-            this.logger.warn(`Password reset attempt for ${user.email} failed: Passwords do not match.`, logContext);
+            this.logger.warn(`Password reset attempt for ${account.email} failed: Passwords do not match.`, logContext);
             throw new ForbiddenException('Passwords do not match.');
-        }
-
-        if (!user.passwordResetExpires || user.passwordResetExpires < new Date()) {
-            this.logger.warn(`Password reset token expired for ${user.email}`, logContext);
-            throw new ForbiddenException('Token has expired. Try forgot password again.');
         }
 
         const hashedPassword = await argon.hash(data.password);
 
-        const updatedUser = await this.accountRepository.preload({
-            id: user.id,
+        const updatedAccount = await this.accountRepository.preload({
+            id: account.id,
             password: hashedPassword,
             passwordChangedAt: new Date(),
             passwordResetToken: null,
-            passwordResetExpires: null,
             loginAttempts: 0,
             loginLockedUntil: null
         });
 
-        await this.accountRepository.save(updatedUser);
+        await this.accountRepository.save(updatedAccount);
 
         await this.emailQueue.add('password-reset-done', {
-            firstName: updatedUser.firstName,
-            lastName: updatedUser.lastName,
-            email: updatedUser.email
+            firstName: updatedAccount.firstName,
+            lastName: updatedAccount.lastName,
+            email: updatedAccount.email
         });
-        this.logger.debug(`Password reset successful for ${user.email}`, logContext);
+        this.logger.debug(`Password reset successful for ${account.email}`, logContext);
 
-        return this.completeLogin(user, req, res);
+        return this.completeLogin(account, res);
     }
 
     /** Creates an account with an argon2-hashed password. The welcome email waits until the email address is

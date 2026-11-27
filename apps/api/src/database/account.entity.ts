@@ -55,22 +55,18 @@ export default class Account {
     @StrongPassword()
     password: string;
 
-    /** When the password was last changed or reset. Recorded only; nothing reads it yet. */
+    /** When the password was last changed or reset. Sessions issued before it are refused, so a change ends every
+     * other session. */
     @Column({ type: 'timestamp', nullable: true, default: null })
     @IsDate()
     passwordChangedAt?: Date;
 
-    /** The signed reset token from the latest password reset email; whoever holds it can set a new password. Never
-     * serialized, and out of default selects so it never leaves the API. */
+    /** The argon2 hash of the encrypted reset token in the latest password reset email, so a leaked row can't be used
+     * to reset the password. Never serialized, and out of default selects so it never leaves the API. */
     @Exclude()
     @Column({ default: null, select: false })
     @IsString()
     passwordResetToken?: string;
-
-    /** When {@link Account.passwordResetToken} stops working, taken from the token's own expiry. */
-    @Column({ default: null })
-    @IsDate()
-    passwordResetExpires?: Date;
 
     /** Wrong current passwords given to the password change since the last
      * success or lockout. */
