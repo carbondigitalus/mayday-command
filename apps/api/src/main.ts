@@ -9,7 +9,6 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 // Custom Modules
 import AppModule from './app.module';
 import configureApp from './app.setup';
-import './sentry/sentry.service';
 
 /** The log levels printed: production leaves out `debug` and `verbose`, so detailed logs stay in development. Applies
  * to `LoggerService` too, since it extends Nest's `Logger`. */

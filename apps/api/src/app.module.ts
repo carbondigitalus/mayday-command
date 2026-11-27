@@ -6,7 +6,6 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { PugAdapter } from '@nestjs-modules/mailer/adapters/pug.adapter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 
 // Custom Modules
 import AccessModule from './access/access.module';
@@ -26,7 +25,6 @@ import MessageQueueModule from './message-queue/mq.module';
 import MFAModule from './mfa/mfa.module';
 import OrganizationModule from './organization/organization.module';
 import RoleModule from './role/role.module';
-import SentryAPIModule from './sentry/sentry.module';
 import JWTExceptionFilter from './utils/filters/JWTException.filter';
 import TypeORMExceptionFilter from './utils/filters/TypeORMException.filter';
 import VerificationModule from './verification/verification.module';
@@ -59,7 +57,6 @@ import VerificationModule from './verification/verification.module';
                 }
             }
         }),
-        SentryModule.forRoot(),
         // app-wide ceiling per IP; sensitive routes tighten it with StrictThrottle
         // an IPv6 client is counted by its /64, the block one subscriber holds, so rotating addresses within it
         // doesn't give a fresh limit
@@ -93,7 +90,6 @@ import VerificationModule from './verification/verification.module';
         MFAModule,
         OrganizationModule,
         RoleModule,
-        SentryAPIModule,
         VerificationModule
     ],
     controllers: [],
@@ -105,10 +101,6 @@ import VerificationModule from './verification/verification.module';
         {
             provide: APP_FILTER,
             useClass: JWTExceptionFilter
-        },
-        {
-            provide: APP_FILTER,
-            useClass: SentryGlobalFilter
         },
         {
             provide: APP_FILTER,
