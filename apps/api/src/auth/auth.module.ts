@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 // Custom Modules
 import AuthService from './auth.service';
 import Account from 'src/database/account.entity';
-import LoggerService from 'src/logger/logger.service';
 import JWTAccessTokenGuard from 'src/utils/guards/JWTAccessTokenGuard.guard';
 import AccessTokenStrategy from 'src/utils/strategy/AccessTokenStrategy.strategy';
 
@@ -15,6 +14,6 @@ import AccessTokenStrategy from 'src/utils/strategy/AccessTokenStrategy.strategy
 @Module({
     exports: [AccessTokenStrategy, AuthService, JWTAccessTokenGuard, TypeOrmModule],
     imports: [JwtModule.register({}), TypeOrmModule.forFeature([Account])],
-    providers: [AccessTokenStrategy, AuthService, JWTAccessTokenGuard, LoggerService]
+    providers: [AccessTokenStrategy, AuthService, JWTAccessTokenGuard]
 })
 export default class AuthModule {}

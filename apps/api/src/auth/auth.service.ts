@@ -38,7 +38,7 @@ export default class AuthService {
 
         res.cookie(process.env.COOKIE_NAME, accessToken, { ...this.getCookieOptions(), expires: accessTokenExpires });
 
-        this.logger.log(`Login cookie set for account ${account.email}`, logContext, { accountID: account.id });
+        this.logger.log(`Login cookie set for account ${account.id}`, logContext);
 
         return { status: 'success' };
     }

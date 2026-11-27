@@ -2,6 +2,7 @@
 import { join } from 'path';
 
 // NPM Modules
+import { LogLevel } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
@@ -10,9 +11,13 @@ import AppModule from './app.module';
 import configureApp from './app.setup';
 import './sentry/sentry.service';
 
+/** The log levels printed: production leaves out `debug` and `verbose`, so detailed logs stay in development. Applies
+ * to `LoggerService` too, since it extends Nest's `Logger`. */
+const logLevels: LogLevel[] =
+    process.env.NODE_ENV === 'production' ? ['error', 'warn', 'log'] : ['error', 'warn', 'log', 'debug', 'verbose'];
+
 async function bootstrap() {
-    // create express based app
-    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: logLevels });
     app.setBaseViewsDir(join(__dirname, '..', 'views'));
     app.setViewEngine('pug');
     // setup cors on subdomain

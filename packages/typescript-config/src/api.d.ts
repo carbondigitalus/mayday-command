@@ -2,12 +2,6 @@ declare namespace NodeJS {
     export interface ProcessEnv {
         // Database Connection
         DB_HOST: string;
-        DB_MONGO_HOST: string;
-        DB_MONGO_PASSWORD: string;
-        DB_MONGO_PORT: number;
-        DB_MONGO_SSL: string;
-        DB_MONGO_TABLE: string;
-        DB_MONGO_USERNAME: string;
         DB_NAME: string;
         DB_PASSWORD: string;
         DB_PORT: number;

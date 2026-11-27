@@ -12,18 +12,15 @@ import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import AccessModule from './access/access.module';
 import AccountModule from './account/account.module';
 import AuthModule from './auth/auth.module';
-import CronModule from './cron/cron.module';
 import Access from './database/access.entity';
 import Account from './database/account.entity';
 import Invitation from './database/invitation.entity';
-import LoggerEntry from './database/logger-entry.entity';
 import MFAChallenge from './database/mfa-challenge.entity';
 import ModuleEntity from './database/module.entity';
 import Organization from './database/organization.entity';
 import Role from './database/role.entity';
 import EmailModule from './email/email.module';
 import InvitationModule from './invitation/invitation.module';
-import LoggerEntryModule from './logger-entry/logger-entry.module';
 import LoggerModule from './logger/logger.module';
 import MessageQueueModule from './message-queue/mq.module';
 import MFAModule from './mfa/mfa.module';
@@ -86,25 +83,11 @@ import VerificationModule from './verification/verification.module';
                     : false,
             synchronize: true
         }),
-        TypeOrmModule.forRoot({
-            name: 'mongo',
-            type: 'mongodb',
-            authSource: 'admin',
-            host: process.env.DB_MONGO_HOST,
-            port: Number(process.env.DB_MONGO_PORT),
-            username: process.env.DB_MONGO_USERNAME,
-            password: process.env.DB_MONGO_PASSWORD,
-            database: process.env.DB_MONGO_TABLE || '',
-            entities: [LoggerEntry],
-            tls: process.env.DB_MONGO_SSL === 'true'
-        }),
         AccessModule,
         AccountModule,
         AuthModule,
-        CronModule,
         EmailModule,
         InvitationModule,
-        LoggerEntryModule,
         LoggerModule,
         MessageQueueModule,
         MFAModule,
