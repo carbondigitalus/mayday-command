@@ -1,0 +1,26 @@
+{
+    "moduleFileExtensions": ["js", "json", "ts"],
+    "rootDir": ".",
+    "testEnvironment": "node",
+    "testRegex": "e2e/.*\\.e2e-spec\\.ts$",
+    "transformIgnorePatterns": ["/node_modules/(?!@nestjs/)"],
+    "transform": {
+        "^.+\\.(t|j)s$": [
+            "<rootDir>/../jest.transformer.js",
+            {
+                "isolatedModules": true,
+                "tsconfig": {
+                    "allowJs": true,
+                    "emitDecoratorMetadata": true,
+                    "esModuleInterop": true,
+                    "experimentalDecorators": true,
+                    "module": "commonjs"
+                }
+            }
+        ]
+    },
+    "moduleNameMapper": {
+        "^src/(.*)$": "<rootDir>/../src/$1",
+        "^(\\.{1,2}/.*)\\.js$": "$1"
+    }
+}
