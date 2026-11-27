@@ -1,0 +1,16 @@
+{
+    "extends": "@mayday-command/typescript-config/nestjs.json",
+    "compilerOptions": {
+        "jsx": "react",
+        "noEmit": true,
+        "paths": {
+            "src/*": ["./src/*"]
+        }
+    },
+    "include": [
+        "./src/**/*.ts",
+        "./tests/**/*.ts",
+        "../../packages/typescript-config/src/global.d.ts",
+        "../../packages/typescript-config/src/api.d.ts"
+    ]
+}
