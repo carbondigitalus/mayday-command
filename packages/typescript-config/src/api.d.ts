@@ -29,7 +29,6 @@ declare namespace NodeJS {
         JWT_TOKEN_ACCESS_SECRET: string;
         JWT_TOKEN_EMAIL_VERIFY_EXPIRES_IN: string;
         JWT_TOKEN_EMAIL_VERIFY_SECRET: string;
-        JWT_TOKEN_INVITATION_EXPIRES_IN: string;
         JWT_TOKEN_INVITATION_SECRET: string;
         JWT_TOKEN_MFA_CHALLENGE_EXPIRES_IN: string;
         JWT_TOKEN_MFA_CHALLENGE_SECRET: string;

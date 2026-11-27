@@ -110,17 +110,18 @@ export default class AuthService {
         return { emailVerificationToken: encryptToken(emailVerificationToken) };
     }
 
-    /** Signs the token for an invitation, identified by `invitationID`, to join an organization. */
-    async generateTokenInvitation(invitationID: string): Promise<InvitationTokenType> {
+    /** Signs the token for an invitation, identified by `invitationID`. Its `exp` is the invitation's own `expiresAt`,
+     * so the token and the stored invitation always expire together. */
+    async generateTokenInvitation(invitationID: string, expiresAt: Date): Promise<InvitationTokenType> {
         const logContext = 'AuthService-generateTokenInvitation';
 
         const payload = {
+            exp: Math.floor(expiresAt.getTime() / 1000),
             sub: invitationID,
             tokenType: TokenTypes.Invitation
         };
 
         const invitationToken = await this.jwt.signAsync(payload, {
-            expiresIn: process.env.JWT_TOKEN_INVITATION_EXPIRES_IN as SignOptions['expiresIn'],
             secret: process.env.JWT_TOKEN_INVITATION_SECRET
         });
 
