@@ -9,8 +9,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Custom Modules
 import AccountModule from './account/account.module';
+import AssetsModule from './assets/assets.module';
 import AuthModule from './auth/auth.module';
 import Account from './database/account.entity';
+import Asset from './database/asset.entity';
 import Invitation from './database/invitation.entity';
 import MFAChallenge from './database/mfa-challenge.entity';
 import Organization from './database/organization.entity';
@@ -67,7 +69,7 @@ import VerificationModule from './verification/verification.module';
             username: process.env.DB_USERNAME,
             password: process.env.DB_PASSWORD,
             database: process.env.DB_TABLE,
-            entities: [Account, Invitation, MFAChallenge, Organization],
+            entities: [Account, Asset, Invitation, MFAChallenge, Organization],
             ssl:
                 process.env.DB_SSL === 'true'
                     ? {
@@ -77,6 +79,7 @@ import VerificationModule from './verification/verification.module';
             synchronize: true
         }),
         AccountModule,
+        AssetsModule,
         AuthModule,
         EmailModule,
         InvitationModule,

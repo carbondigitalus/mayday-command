@@ -11,22 +11,22 @@ import AccountRole from '@mayday-command/utils/enums/AccountRole.enum';
 import OrganizationCreateDTO from './dto/create.dto';
 import OrganizationUpdateDTO from './dto/update.dto';
 import AccountService from 'src/account/account.service';
+import AssetsService from 'src/assets/assets.service';
 import Account from 'src/database/account.entity';
 import Organization from 'src/database/organization.entity';
-import FileUploadService from 'src/file/file-upload.service';
 import LoggerService from 'src/logger/logger.service';
 
 /** CRUD for Organization, including the creator joining what they create. */
 @Injectable()
 export default class OrganizationService {
-    /** The account and organization repositories, plus the account, file upload and logger services. */
+    /** The account and organization repositories, plus the account, assets and logger services. */
     constructor(
         @InjectRepository(Account)
         private accountRepository: Repository<Account>,
         @InjectRepository(Organization)
         private organizationRepository: Repository<Organization>,
         private accountService: AccountService,
-        private fileService: FileUploadService,
+        private assetsService: AssetsService,
         private logger: LoggerService
     ) {}
 
@@ -77,6 +77,7 @@ export default class OrganizationService {
         const isPlatformRole = !!account.role && platformRoles.includes(account.role);
 
         const organizationList = await this.organizationRepository.find({
+            relations: { logo: true },
             where: isPlatformRole ? { isActive: true } : { isActive: true, accountList: { id: account.id } }
         });
 
@@ -109,6 +110,7 @@ export default class OrganizationService {
         const logContext = 'OrganizationService-readOne';
 
         const organization = await this.organizationRepository.findOne({
+            relations: { logo: true },
             where: { id }
         });
 
@@ -198,14 +200,17 @@ export default class OrganizationService {
         return result;
     }
 
-    /** Requires organization:admin on `id`, enforced by the controller's RolesGuard.
-     * Stored as `organization-logo-<id>.png` (see `FileUploadService.fileUploadLogo`),
-     * and `logo` holds that blob name. */
-    async uploadLogo(id: string, file: Express.Multer.File) {
+    /** Uploads `file` as the organization's logo, uploaded by `uploadedBy`, and deletes the logo it replaces. Access
+     * is checked by the controller's RolesGuard. The new logo is linked before the old one is deleted, so the
+     * organization is never left without one; if deleting the old one fails, that's logged rather than failing a
+     * replacement that already succeeded.
+     * @throws NotFoundException when the organization doesn't exist, before anything is uploaded. */
+    async uploadLogo(id: string, file: Express.Multer.File, uploadedBy: Account) {
         const logContext = 'OrganizationService-uploadLogo';
 
         const organization = await this.organizationRepository.findOne({
-            where: { id }
+            where: { id },
+            relations: { logo: true }
         });
 
         if (!organization) {
@@ -213,16 +218,23 @@ export default class OrganizationService {
             throw new NotFoundException('Organization not found.');
         }
 
-        const fileName = await this.fileService.fileUploadLogo(file, id, 'organization');
+        const logo = await this.assetsService.upload(file, AssetsService.logoRules, uploadedBy);
 
-        const updatedOrganization = await this.organizationRepository.preload({
-            id: organization.id,
-            logo: fileName.toString()
-        });
-
+        const updatedOrganization = await this.organizationRepository.preload({ id, logo });
         const result = await this.organizationRepository.save(updatedOrganization);
 
-        this.logger.debug(`Organization logo updated successfully for: ${organization.name} (ID: ${id})`, logContext);
+        if (organization.logo) {
+            try {
+                await this.assetsService.delete(organization.logo);
+            } catch (error) {
+                this.logger.warn(
+                    `Replaced logo ${organization.logo.id} for ${id} could not be deleted: ${error instanceof Error ? error.message : 'unknown error'}`,
+                    logContext
+                );
+            }
+        }
+
+        this.logger.debug(`Organization logo updated successfully: ${id}`, logContext);
 
         return result;
     }

@@ -116,17 +116,15 @@ describe('OrganizationController', () => {
     });
 
     describe('organizationUploadLogo', () => {
-        it('passes the id and uploaded file to the service', () => {
+        it('passes the id, uploaded file and signed-in account to the service', () => {
             const file = { buffer: Buffer.from('img') } as Express.Multer.File;
-            (organizationService.uploadLogo as jest.Mock).mockReturnValue({
-                id: 'org-1',
-                logo: 'organization-logo-org-1.png'
-            });
+            const account = { id: 'acc-1' } as Account;
+            (organizationService.uploadLogo as jest.Mock).mockReturnValue({ id: 'org-1', logo: { id: 'asset-1' } });
 
-            const result = controller.organizationUploadLogo('org-1', file);
+            const result = controller.organizationUploadLogo('org-1', file, account);
 
-            expect(organizationService.uploadLogo).toHaveBeenCalledWith('org-1', file);
-            expect(result).toEqual({ id: 'org-1', logo: 'organization-logo-org-1.png' });
+            expect(organizationService.uploadLogo).toHaveBeenCalledWith('org-1', file, account);
+            expect(result).toEqual({ id: 'org-1', logo: { id: 'asset-1' } });
         });
     });
 

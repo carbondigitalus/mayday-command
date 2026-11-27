@@ -18,11 +18,6 @@ declare namespace NodeJS {
         EMAIL_PORT_DEV: number;
         EMAIL_USERNAME_DEV: string;
         EMAIL_PASSWORD_DEV: string;
-        // External Storage
-        EXTERNAL_STORAGE_ACCOUNT_NAME: string;
-        EXTERNAL_STORAGE_CONTAINER_NAME: string;
-        EXTERNAL_STORAGE_KEY: string;
-        EXTERNAL_STORAGE_URL: string;
         // JWTs
         JWT_ENCRYPTION_KEY: string;
         JWT_TOKEN_ACCESS_EXPIRES_IN: string;
@@ -42,5 +37,11 @@ declare namespace NodeJS {
         NEXTJS_PUBLIC_REVALIDATE_SECRET: string;
         NEXTJS_PUBLIC_URL: string;
         NEXTJS_SSO_URL: string;
+        // Storage
+        STORAGE_ACCESS_KEY_ID: string;
+        STORAGE_BUCKET: string;
+        STORAGE_ENDPOINT: string;
+        STORAGE_REGION: string;
+        STORAGE_SECRET_ACCESS_KEY: string;
     }
 }

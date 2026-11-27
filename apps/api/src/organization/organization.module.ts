@@ -6,16 +6,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import OrganizationController from './organization.controller';
 import OrganizationService from './organization.service';
 import AccountModule from 'src/account/account.module';
+import AssetsModule from 'src/assets/assets.module';
 import Account from 'src/database/account.entity';
 import Organization from 'src/database/organization.entity';
-import FileUploadService from 'src/file/file-upload.service';
 
-/** Wires up Organization CRUD. The account repository is registered for `RolesGuard`'s membership check, and
- * `AccountModule` for the creator joining what they create. */
+/** Wires up Organization CRUD. The account repository is registered for `RolesGuard`'s membership check,
+ * `AccountModule` for the creator joining what they create, and `AssetsModule` for the logo. */
 @Module({
     controllers: [OrganizationController],
     exports: [OrganizationService, TypeOrmModule],
-    imports: [AccountModule, TypeOrmModule.forFeature([Account, Organization])],
-    providers: [FileUploadService, OrganizationService]
+    imports: [AccountModule, AssetsModule, TypeOrmModule.forFeature([Account, Organization])],
+    providers: [OrganizationService]
 })
 export default class OrganizationModule {}

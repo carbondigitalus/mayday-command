@@ -10,9 +10,9 @@ import AccountRole from '@mayday-command/utils/enums/AccountRole.enum';
 import OrganizationService from 'src/organization/organization.service';
 import OrganizationUpdateDTO from 'src/organization/dto/update.dto';
 import AccountService from 'src/account/account.service';
+import AssetsService from 'src/assets/assets.service';
 import Account from 'src/database/account.entity';
 import Organization from 'src/database/organization.entity';
-import FileUploadService from 'src/file/file-upload.service';
 import LoggerService from 'src/logger/logger.service';
 
 describe('OrganizationService', () => {
@@ -30,7 +30,7 @@ describe('OrganizationService', () => {
     let manager: { count: jest.Mock; createQueryBuilder: jest.Mock; findOne: jest.Mock };
     let relation: { of: jest.Mock; remove: jest.Mock };
     let accountService: { assignRole: jest.Mock };
-    let fileService: { fileUploadLogo: jest.Mock };
+    let assetsService: { delete: jest.Mock; upload: jest.Mock };
     let logger: { debug: jest.Mock; warn: jest.Mock };
 
     beforeEach(async () => {
@@ -55,7 +55,7 @@ describe('OrganizationService', () => {
             findOne: jest.fn()
         };
         accountService = { assignRole: jest.fn() };
-        fileService = { fileUploadLogo: jest.fn() };
+        assetsService = { delete: jest.fn(), upload: jest.fn() };
         logger = { debug: jest.fn(), warn: jest.fn() };
 
         const module: TestingModule = await Test.createTestingModule({
@@ -67,7 +67,7 @@ describe('OrganizationService', () => {
                 },
                 { provide: getRepositoryToken(Account), useValue: accountRepository },
                 { provide: AccountService, useValue: accountService },
-                { provide: FileUploadService, useValue: fileService },
+                { provide: AssetsService, useValue: assetsService },
                 { provide: LoggerService, useValue: logger }
             ]
         }).compile();
@@ -191,7 +191,10 @@ describe('OrganizationService', () => {
 
                 const result = await service.readAll({ id: 'acc-1', role } as Account);
 
-                expect(organizationRepository.find).toHaveBeenCalledWith({ where: { isActive: true } });
+                expect(organizationRepository.find).toHaveBeenCalledWith({
+                    relations: { logo: true },
+                    where: { isActive: true }
+                });
                 expect(result).toEqual(list);
             }
         );
@@ -204,6 +207,7 @@ describe('OrganizationService', () => {
                 await service.readAll({ id: 'acc-1', role } as Account);
 
                 expect(organizationRepository.find).toHaveBeenCalledWith({
+                    relations: { logo: true },
                     where: { isActive: true, accountList: { id: 'acc-1' } }
                 });
             }
@@ -263,41 +267,62 @@ describe('OrganizationService', () => {
 
     describe('uploadLogo', () => {
         const file = { buffer: Buffer.from('img') } as Express.Multer.File;
+        const uploader = { id: 'acc-1' } as Account;
+        const newLogo = { id: 'asset-new' };
+
+        beforeEach(() => {
+            assetsService.upload.mockResolvedValue(newLogo);
+            organizationRepository.preload.mockResolvedValue({ id: 'org-1', logo: newLogo });
+            organizationRepository.save.mockResolvedValue({ id: 'org-1', logo: newLogo });
+        });
 
         it('throws NotFoundException, without uploading, when the organization does not exist', async () => {
             organizationRepository.findOne.mockResolvedValue(null);
 
-            await expect(service.uploadLogo('org-1', file)).rejects.toThrow(NotFoundException);
-            expect(fileService.fileUploadLogo).not.toHaveBeenCalled();
+            await expect(service.uploadLogo('org-1', file, uploader)).rejects.toThrow(NotFoundException);
+            expect(assetsService.upload).not.toHaveBeenCalled();
         });
 
-        it('uploads under the organization module type and saves the blob name as logo', async () => {
-            organizationRepository.findOne.mockResolvedValue({ id: 'org-1', name: 'Acme' });
-            fileService.fileUploadLogo.mockResolvedValue('organization-logo-org-1.png');
-            organizationRepository.preload.mockResolvedValue({
-                id: 'org-1',
-                logo: 'organization-logo-org-1.png'
-            });
-            organizationRepository.save.mockResolvedValue({
-                id: 'org-1',
-                logo: 'organization-logo-org-1.png'
-            });
+        it('uploads under the logo rules and links the new asset as the logo', async () => {
+            organizationRepository.findOne.mockResolvedValue({ id: 'org-1', logo: null });
 
-            const result = await service.uploadLogo('org-1', file);
+            const result = await service.uploadLogo('org-1', file, uploader);
 
-            expect(fileService.fileUploadLogo).toHaveBeenCalledWith(file, 'org-1', 'organization');
-            expect(organizationRepository.preload).toHaveBeenCalledWith({
-                id: 'org-1',
-                logo: 'organization-logo-org-1.png'
+            expect(organizationRepository.findOne).toHaveBeenCalledWith({
+                where: { id: 'org-1' },
+                relations: { logo: true }
             });
-            expect(result).toEqual({ id: 'org-1', logo: 'organization-logo-org-1.png' });
+            expect(assetsService.upload).toHaveBeenCalledWith(file, AssetsService.logoRules, uploader);
+            expect(organizationRepository.preload).toHaveBeenCalledWith({ id: 'org-1', logo: newLogo });
+            expect(assetsService.delete).not.toHaveBeenCalled();
+            expect(result).toEqual({ id: 'org-1', logo: newLogo });
+        });
+
+        it('deletes the replaced logo, after the new one is linked', async () => {
+            const oldLogo = { id: 'asset-old' };
+            organizationRepository.findOne.mockResolvedValue({ id: 'org-1', logo: oldLogo });
+
+            await service.uploadLogo('org-1', file, uploader);
+
+            expect(assetsService.delete).toHaveBeenCalledWith(oldLogo);
+            expect(organizationRepository.save.mock.invocationCallOrder[0]).toBeLessThan(
+                assetsService.delete.mock.invocationCallOrder[0]
+            );
+        });
+
+        it('keeps the new logo, logging a warning, when the replaced one cannot be deleted', async () => {
+            organizationRepository.findOne.mockResolvedValue({ id: 'org-1', logo: { id: 'asset-old' } });
+            assetsService.delete.mockRejectedValue(new Error('storage down'));
+
+            await expect(service.uploadLogo('org-1', file, uploader)).resolves.toEqual({ id: 'org-1', logo: newLogo });
+            expect(logger.warn).toHaveBeenCalled();
         });
 
         it('does not save when the upload fails', async () => {
-            organizationRepository.findOne.mockResolvedValue({ id: 'org-1', name: 'Acme' });
-            fileService.fileUploadLogo.mockRejectedValue(new Error('storage down'));
+            organizationRepository.findOne.mockResolvedValue({ id: 'org-1', logo: null });
+            assetsService.upload.mockRejectedValue(new Error('storage down'));
 
-            await expect(service.uploadLogo('org-1', file)).rejects.toThrow('storage down');
+            await expect(service.uploadLogo('org-1', file, uploader)).rejects.toThrow('storage down');
             expect(organizationRepository.save).not.toHaveBeenCalled();
         });
     });

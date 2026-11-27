@@ -1,10 +1,20 @@
 // NPM Modules
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
-import { Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToMany,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from 'typeorm';
 import 'reflect-metadata';
 
 // Custom Modules
 import Account from './account.entity';
+import Asset from './asset.entity';
 
 /** A customer organization. Accounts belong to it through {@link Account.organizationList}. */
 @Entity()
@@ -20,10 +30,11 @@ export default class Organization {
     @IsNotEmpty()
     name: string;
 
-    /** URL of the organization's logo image. */
-    @Column({ nullable: true, default: null })
-    @IsString()
-    logo?: string;
+    /** The organization's logo, an uploaded {@link Asset}. Clients fetch it through `GET /asset/:assetID`. Null until
+     * one is uploaded. Column saved in db will be `logoId`. */
+    @ManyToOne(() => Asset, { nullable: true })
+    @JoinColumn()
+    logo?: Asset | null;
 
     /** Whether the organization is active on the platform. */
     @Column({
