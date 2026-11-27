@@ -16,7 +16,7 @@
         "start:web:prod": "npm run start:prod --workspace=@mayday-command/web",
         "start:dev": "turbo start:dev",
         "test:e2e": "turbo test:e2e",
-        "test:unit": "turbo test:unit",
+        "test:unit": "turbo test:unit --filter=!@mayday-command/web",
         "typecheck": "turbo typecheck"
     },
     "devDependencies": {

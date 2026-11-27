@@ -479,6 +479,44 @@ export default class AccountService {
         return this.completeLogin(account, res);
     }
 
+    /** Sets an account's role. platform:admin only, enforced by the controller. Since an account holds one role across
+     * all its organizations, only platform admins change it. The install must keep at least one platform:admin, so
+     * the last one can't be changed to another role; the platform admins are locked for the length of the check, so
+     * two admins changing each other at once can't leave none.
+     * @throws NotFoundException when the account doesn't exist.
+     * @throws ForbiddenException when it would remove the install's last platform:admin. */
+    async changeRole(accountID: string, role: AccountRole) {
+        const logContext = 'AccountService-changeRole';
+
+        await this.accountRepository.manager.transaction(async (manager) => {
+            const account = await manager.findOne(Account, { where: { id: accountID } });
+
+            if (!account) {
+                this.logger.warn(`Role change failed: Account not found for ID: ${accountID}`, logContext);
+                throw new NotFoundException('Account not found.');
+            }
+
+            if (account.role === AccountRole.PlatformAdmin && role !== AccountRole.PlatformAdmin) {
+                const platformAdminList = await manager.find(Account, {
+                    where: { role: AccountRole.PlatformAdmin },
+                    select: { id: true },
+                    lock: { mode: 'pessimistic_write' }
+                });
+
+                if (platformAdminList.length <= 1) {
+                    this.logger.warn(`Role change refused: ${accountID} is the last platform:admin`, logContext);
+                    throw new ForbiddenException('The install must keep at least one platform admin.');
+                }
+            }
+
+            await manager.update(Account, accountID, { role });
+        });
+
+        this.logger.log(`Role of account ${accountID} changed to ${role}`, logContext);
+
+        return { id: accountID, role };
+    }
+
     /** Whether the install still needs its first platform:admin, so the portal knows to show first-run setup. */
     async isSetupAdminRequired() {
         const hasAdmin = await this.accountRepository.exists({ where: { role: AccountRole.PlatformAdmin } });

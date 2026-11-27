@@ -25,6 +25,7 @@ import AccountPasswordChangeDTO from './dto/password-change.dto';
 import AccountPasswordForgotDTO from './dto/password-forgot.dto';
 import AccountPasswordResetDTO from './dto/password-reset.dto';
 import AccountRegisterDTO from './dto/register.dto';
+import AccountRoleChangeDTO from './dto/role-change.dto';
 import AccountUpdateDTO from './dto/update.dto';
 import Account from 'src/database/account.entity';
 import AllowUnverifiedEmail from 'src/utils/decorators/AllowUnverifiedEmail.decorator';
@@ -111,6 +112,15 @@ export default class AccountController {
     @Patch('admin/:accountID/deactivate')
     accountAdminDeactivate(@Param('accountID') accountID: string, @GetAccountData('account') admin: Account) {
         return this.accountService.deactivate({ id: accountID }, admin.id);
+    }
+
+    /** `PATCH /account/admin/:accountID/role`: sets an account's role. platform:admin only. The last platform admin
+     * can't be changed to another role. */
+    @UseGuards(JWTAccessTokenGuard, RolesGuard)
+    @RequiresRole(AccountRole.PlatformAdmin)
+    @Patch('admin/:accountID/role')
+    accountAdminChangeRole(@Param('accountID') accountID: string, @Body() data: AccountRoleChangeDTO) {
+        return this.accountService.changeRole(accountID, data.role);
     }
 
     /** `POST /account/login`: sets the session cookie, or returns a second-factor challenge when 2FA is due. */
