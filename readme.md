@@ -19,7 +19,7 @@ Support teams need an inbox they can work out of, a clear owner for every reques
 
 Mayday Command is built around that everyday workflow. Your team can run it on its own infrastructure under the MIT license.
 
-## First release roadmap
+## First release roadmap (v0.1.0)
 
 - [ ] **Shared inbox** — See new and open requests in one place.
 - [ ] **Email to ticket** — Turn incoming support email into tickets automatically and attach replies to the right conversation. Microsoft 365 is the first planned mail integration.
