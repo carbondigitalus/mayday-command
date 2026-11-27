@@ -98,6 +98,12 @@ export default class Account {
     @IsDate()
     loginLockedUntil?: Date | null;
 
+    /** When the account last signed in: when a session was issued at login or password reset, or a 2FA code was
+     * accepted. Null means never. */
+    @Column({ type: 'timestamp', nullable: true, default: null })
+    @IsDate()
+    lastLoginAt?: Date | null;
+
     /** When the account last passed 2FA at login, or verified its email.
      * Login asks for a second factor again once this is older than
      * `MFA_REVALIDATION_DAYS`. Null means never. */
