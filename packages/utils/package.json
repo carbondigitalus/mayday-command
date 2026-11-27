@@ -1,0 +1,43 @@
+{
+    "name": "@mayday-command/utils",
+    "version": "0.0.0",
+    "private": true,
+    "license": "UNLICENSED",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "require": "./dist/index.js",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./*": {
+            "types": "./dist/*.d.ts",
+            "require": "./dist/*.js",
+            "import": "./dist/*.js",
+            "default": "./dist/*.js"
+        }
+    },
+    "scripts": {
+        "build": "tsc -b -v",
+        "test:unit": "jest --coverage --passWithNoTests --config jest.config.ts",
+        "test:watch": "jest --coverage --watch --passWithNoTests --config jest.config.ts",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "class-transformer": "^0.5.1",
+        "class-validator": "^0.14.2",
+        "phone": "^3.1.67",
+        "reflect-metadata": "^0.2.2",
+        "zod": "^4.6.5"
+    },
+    "devDependencies": {
+        "@mayday-command/jest-config": "file:../../packages/jest-config",
+        "@mayday-command/typescript-config": "*",
+        "@types/jest": "^30.0.0",
+        "jest": "^30.0.5",
+        "ts-jest": "^29.4.1",
+        "typescript": "^5.9.2"
+    }
+}
