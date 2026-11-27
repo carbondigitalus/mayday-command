@@ -1,7 +1,9 @@
+// Core Modules
+import { URL } from 'url';
+
 // NPM Modules
 import { Injectable, Logger } from '@nestjs/common';
 import chalk from 'chalk';
-import { URL } from 'url';
 
 /** The API's one logger. It extends Nest's `Logger`, so the level filter in `main.ts` applies to it, and redacts
  * secrets from every message and `data` value before anything is printed. Output goes to the console only. */
