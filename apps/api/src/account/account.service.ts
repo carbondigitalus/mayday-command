@@ -201,12 +201,12 @@ export default class AccountService {
         });
 
         if (!account) {
-            this.logger.warn(`Login attempt with non-existent email: ${data.email}`, logContext);
+            this.logger.warn('Login attempt failed: No account has that email.', logContext);
             throw new ForbiddenException('Email or password incorrect.');
         }
 
         if (account.loginLockedUntil && account.loginLockedUntil.getTime() > Date.now()) {
-            this.logger.warn(`Login refused for ${data.email}: Locked after too many attempts.`, logContext);
+            this.logger.warn(`Login refused for ${account.id}: Locked after too many attempts.`, logContext);
             throw this.lockedException(account.loginLockedUntil);
         }
 
@@ -215,7 +215,7 @@ export default class AccountService {
         const passwordValidateSuccess = await argon.verify(account.password, data.password);
 
         if (!passwordValidateSuccess) {
-            this.logger.warn(`Login attempt for email ${data.email} failed due to incorrect password.`, logContext);
+            this.logger.warn(`Login attempt for ${account.id} failed: Incorrect password.`, logContext);
 
             if (attempts >= AccountService.maxPasswordAttempts) {
                 const lockedUntil = new Date(Date.now() + AccountService.lockoutMS);
@@ -230,13 +230,13 @@ export default class AccountService {
         await this.accountRepository.update(account.id, { loginAttempts: 0, loginLockedUntil: null });
 
         if (!account.isActive) {
-            this.logger.warn(`Login attempt for deactivated account: ${data.email}`, logContext);
+            this.logger.warn(`Login attempt for ${account.id} refused: Account is deactivated.`, logContext);
             throw new ForbiddenException('Account is deactivated.');
         }
 
         const session = await this.completeLogin(account, res);
 
-        this.logger.debug(`Login successful for ${data.email}`, logContext);
+        this.logger.debug(`Login successful for ${account.id}`, logContext);
 
         return session;
     }
@@ -289,17 +289,14 @@ export default class AccountService {
         }
 
         if (account.passwordChangeLockedUntil && account.passwordChangeLockedUntil.getTime() > Date.now()) {
-            this.logger.warn(
-                `Password change refused for ${account.email}: Locked after too many attempts.`,
-                logContext
-            );
+            this.logger.warn(`Password change refused for ${account.id}: Locked after too many attempts.`, logContext);
             throw this.lockedException(account.passwordChangeLockedUntil);
         }
 
         const attempts = await this.reservePasswordAttempt(account.id, 'passwordChangeAttempts');
 
         if (!(await argon.verify(account.password, data.currentPassword))) {
-            this.logger.warn(`Password change failed for ${account.email}: Current password is incorrect.`, logContext);
+            this.logger.warn(`Password change failed for ${account.id}: Current password is incorrect.`, logContext);
 
             if (attempts >= AccountService.maxPasswordAttempts) {
                 const lockedUntil = new Date(Date.now() + AccountService.lockoutMS);
@@ -319,13 +316,13 @@ export default class AccountService {
         await this.accountRepository.update(account.id, { passwordChangeAttempts: 0, passwordChangeLockedUntil: null });
 
         if (data.password !== data.passwordConfirm) {
-            this.logger.warn(`Password change failed for ${account.email}: Passwords do not match.`, logContext);
+            this.logger.warn(`Password change failed for ${account.id}: Passwords do not match.`, logContext);
             throw new ForbiddenException('Passwords do not match.');
         }
 
         if (data.password === data.currentPassword) {
             this.logger.warn(
-                `Password change failed for ${account.email}: New password matches the current one.`,
+                `Password change failed for ${account.id}: New password matches the current one.`,
                 logContext
             );
             throw new ForbiddenException('New password must be different from your current password.');
@@ -346,7 +343,7 @@ export default class AccountService {
             lastName: updatedAccount.lastName,
             email: updatedAccount.email
         });
-        this.logger.debug(`Password updated successfully for ${account.email}`, logContext);
+        this.logger.debug(`Password updated successfully for ${account.id}`, logContext);
 
         return this.authService.createCookieLogin(account, res);
     }
@@ -390,7 +387,7 @@ export default class AccountService {
         });
 
         if (!account) {
-            this.logger.warn(`Password reset requested for non-existent email: ${data.email}`, logContext);
+            this.logger.warn('Password reset requested: No account has that email.', logContext);
             return { message: passwordForgotMessage };
         }
 
@@ -409,7 +406,7 @@ export default class AccountService {
             email: updatedAccount.email,
             token: token.passwordResetToken
         });
-        this.logger.debug(`Password reset token generated and email sent for ${data.email}`, logContext);
+        this.logger.debug(`Password reset token generated and email queued for ${account.id}`, logContext);
 
         return { message: passwordForgotMessage };
     }
@@ -438,12 +435,12 @@ export default class AccountService {
         }
 
         if (!account.isActive) {
-            this.logger.warn(`Password reset refused for ${account.email}: Account is deactivated.`, logContext);
+            this.logger.warn(`Password reset refused for ${account.id}: Account is deactivated.`, logContext);
             throw new ForbiddenException('Account is deactivated.');
         }
 
         if (data.password !== data.passwordConfirm) {
-            this.logger.warn(`Password reset attempt for ${account.email} failed: Passwords do not match.`, logContext);
+            this.logger.warn(`Password reset attempt for ${account.id} failed: Passwords do not match.`, logContext);
             throw new ForbiddenException('Passwords do not match.');
         }
 
@@ -465,7 +462,7 @@ export default class AccountService {
             lastName: updatedAccount.lastName,
             email: updatedAccount.email
         });
-        this.logger.debug(`Password reset successful for ${account.email}`, logContext);
+        this.logger.debug(`Password reset successful for ${account.id}`, logContext);
 
         return this.completeLogin(account, res);
     }
@@ -482,7 +479,7 @@ export default class AccountService {
 
         try {
             if (data.password !== data.passwordConfirm) {
-                this.logger.warn(`Register attempt for user ${data.email} failed: Passwords do not match.`, logContext);
+                this.logger.warn('Register attempt failed: Passwords do not match.', logContext);
                 throw new ForbiddenException('Passwords do not match.');
             }
 
@@ -498,7 +495,7 @@ export default class AccountService {
 
             const { emailVerificationToken } = await this.verificationService.issueOneTimePasscode(savedUser);
 
-            this.logger.debug(`Registration successful for ${data.email}`, logContext);
+            this.logger.debug(`Registration successful for ${savedUser.id}`, logContext);
 
             return { account: savedUser, emailVerificationToken };
         } catch (error: unknown) {
@@ -514,10 +511,7 @@ export default class AccountService {
             }
 
             if (error instanceof ForbiddenException) {
-                this.logger.warn(
-                    `ForbiddenException during registration for ${data.email}: ${error.message}`,
-                    logContext
-                );
+                this.logger.warn(`ForbiddenException during registration: ${error.message}`, logContext);
                 throw error;
             }
 
@@ -604,7 +598,7 @@ export default class AccountService {
 
         const result = await this.accountRepository.save(updatedAccount);
 
-        this.logger.debug(`Account updated successfully for ${account.email}`, logContext);
+        this.logger.debug(`Account updated successfully for ${account.id}`, logContext);
 
         return result;
     }

@@ -8,7 +8,6 @@ import AccountService from './account.service';
 import AuthModule from 'src/auth/auth.module';
 import Access from 'src/database/access.entity';
 import Account from 'src/database/account.entity';
-import LoggerService from 'src/logger/logger.service';
 import MessageQueueModule from 'src/message-queue/mq.module';
 import MFAModule from 'src/mfa/mfa.module';
 import AccessTokenStrategy from 'src/utils/strategy/AccessTokenStrategy.strategy';
@@ -24,6 +23,6 @@ import VerificationModule from 'src/verification/verification.module';
     ],
     exports: [TypeOrmModule],
     controllers: [AccountController],
-    providers: [AccessTokenStrategy, AccountService, LoggerService]
+    providers: [AccessTokenStrategy, AccountService]
 })
 export default class AccountModule {}
